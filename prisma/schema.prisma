@@ -17,11 +17,11 @@ model User {
   id        String    @id
   googleId  String    @unique
   email     String    @unique
-  username  String?   @unique
   firstName String
   lastName  String
   picture   String?
   sessions  Session[]
+  budgets   Budget[]
 }
 
 model Session {
@@ -29,4 +29,40 @@ model Session {
   userId    String
   expiresAt DateTime
   user      User     @relation(references: [id], fields: [userId], onDelete: Cascade)
+}
+
+model Budget {
+  id            Int                  @id @default(autoincrement())
+  name          String
+  reserve       Decimal              @default(0)
+  User          User?                @relation(fields: [userId], references: [id])
+  userId        String?
+  monthlyLimits MonthlyBudgetLimit[]
+  transactions  Transaction[]
+}
+
+model MonthlyBudgetLimit {
+  id       Int     @id @default(autoincrement())
+  year     Int
+  month    Int
+  limit    Decimal
+  Budget   Budget? @relation(fields: [budgetId], references: [id])
+  budgetId Int?
+}
+
+model Transaction {
+  id          String   @id
+  amount      Decimal  @default(0)
+  date        DateTime @default(now())
+  description String?
+  tags        Tag[]
+  Budget      Budget?  @relation(fields: [budgetId], references: [id])
+  budgetId    Int?
+}
+
+model Tag {
+  id            String       @id
+  name          String
+  Transaction   Transaction? @relation(fields: [transactionId], references: [id])
+  transactionId String?
 }
