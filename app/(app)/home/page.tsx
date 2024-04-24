@@ -1,9 +1,14 @@
 import { getBudgets } from '@/api/budgets'
-import { Button } from '@/components/ui/button'
 import { redirect } from 'next/navigation'
+import { Button } from '@/components/ui/button'
+import { BudgetsList } from './budgets-list'
 
 export default async function Page() {
   const budgets = await getBudgets()
+
+  if ('error' in budgets) {
+    return <div>{budgets.error}</div>
+  }
 
   async function handleNewBudget() {
     'use server'
@@ -12,11 +17,15 @@ export default async function Page() {
 
   return (
     <div>
-      <h1>Home</h1>
-      <div>You do not have any budgets.</div>
+      <h1 className="text-4xl font-semibold tracking-tighter">Home</h1>
       <form action={handleNewBudget}>
         <Button>New Budget</Button>
       </form>
+      {budgets.length > 0 ? (
+        <BudgetsList budgets={budgets} />
+      ) : (
+        <div>No budgets.</div>
+      )}
     </div>
   )
 }

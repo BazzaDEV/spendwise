@@ -16,7 +16,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { newBudgetSchema } from '@/lib/schemas'
 import { createBudget } from '@/api/budgets'
-import { redirect } from 'next/navigation'
 
 export default function NewBudgetForm() {
   // 1. Define your form.

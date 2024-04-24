@@ -3,13 +3,16 @@
 import { getUserOrRedirect } from '@/lib/auth/actions'
 import db from '@/lib/db'
 import { newBudgetSchema } from '@/lib/schemas'
-import { Prisma } from '@prisma/client'
+import { Budget, Prisma } from '@prisma/client'
+import { revalidatePath } from 'next/cache'
 
 export async function getBudgets() {
   const user = await getUserOrRedirect()
 
   if (!user) {
-    return null
+    return {
+      error: 'Unauthenticated',
+    }
   }
 
   const budgets = await db.budget.findMany({
@@ -25,7 +28,9 @@ export async function createBudget(data: newBudgetSchema) {
   const user = await getUserOrRedirect()
 
   if (!user) {
-    return null
+    return {
+      error: 'Unauthenticated',
+    }
   }
 
   const { monthlyLimit, name } = data
@@ -44,5 +49,37 @@ export async function createBudget(data: newBudgetSchema) {
     },
   })
 
+  revalidatePath(`/home`)
+
   return newBudget
+}
+
+export async function getBudget(data: Pick<Budget, 'id'>) {
+  const user = await getUserOrRedirect()
+
+  if (!user) {
+    return {
+      error: 'Unauthenticated',
+    }
+  }
+
+  const budget = await db.budget.findFirst({
+    where: {
+      id: data.id,
+    },
+  })
+
+  if (!budget) {
+    return {
+      error: 'Budget does not exist.',
+    }
+  }
+
+  if (budget.userId !== user.id) {
+    return {
+      error: 'This budget does not belong to you.',
+    }
+  }
+
+  return budget
 }

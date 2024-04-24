@@ -1,11 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getUser, logout } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export default async function Navbar() {
   return (
     <div className="flex items-center justify-between">
-      <span>Spendwise</span>
+      <Link href="/home">Spendwise</Link>
       <form action={logout}>
         <Button>Sign Out</Button>
       </form>
