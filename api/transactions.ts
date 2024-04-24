@@ -52,3 +52,28 @@ export async function createTransaction(data: NewTransactionSchema) {
 
   return newTransaction
 }
+
+export async function deleteTransaction({
+  transactionId,
+}: {
+  transactionId: string
+}) {
+  const user = await getUserOrRedirect()
+
+  if (!user) {
+    return {
+      error: 'Unauthenticated',
+    }
+  }
+
+  const deletedTransaction = await db.transaction.delete({
+    where: {
+      id: transactionId,
+    },
+  })
+
+  revalidatePath(`/budgets/${deletedTransaction.budgetId}`)
+  revalidatePath(`/transactions/${deletedTransaction.id}`)
+
+  return deletedTransaction
+}

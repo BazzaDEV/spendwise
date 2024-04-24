@@ -7,7 +7,16 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-
+import { MoreHorizontal } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
 import {
   Table,
   TableBody,
@@ -17,6 +26,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { format } from 'date-fns'
+import { deleteTransaction } from '@/api/transactions'
+import { useState } from 'react'
 
 export const columns: ColumnDef<Transaction>[] = [
   {
@@ -45,6 +56,36 @@ export const columns: ColumnDef<Transaction>[] = [
       return <div className="text-right">{formatted}</div>
     },
   },
+  {
+    id: 'actions',
+    cell: ({ row }) => {
+      const transaction = row.original
+
+      async function handleDelete() {
+        await deleteTransaction({ transactionId: transaction.id })
+      }
+
+      return (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <div className="flex justify-end">
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0"
+              >
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            </div>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    },
+  },
 ]
 
 interface DataTableProps<TData, TValue> {
@@ -56,10 +97,17 @@ export function TransactionsTable<TData, TValue>({
   columns,
   data,
 }: DataTableProps<TData, TValue>) {
+  const [rowSelection, setRowSelection] = useState({})
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    onRowSelectionChange: setRowSelection,
+    columnResizeMode: 'onChange',
+    state: {
+      rowSelection,
+    },
   })
 
   return (
