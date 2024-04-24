@@ -14,7 +14,7 @@ export default async function Layout({
   }
 
   return (
-    <div>
+    <div className="min-h-screen p-4">
       <Navbar />
       <div>{children}</div>
     </div>

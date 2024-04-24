@@ -1,4 +1,4 @@
-'use client'
+import NewBudgetForm from './new-budget-form'
 
 export default function Page() {
   return (
@@ -6,8 +6,7 @@ export default function Page() {
       <h1 className="text-4xl font-semibold tracking-tighter">
         Create a new budget
       </h1>
-
-      <div></div>
+      <NewBudgetForm />
     </div>
   )
 }
