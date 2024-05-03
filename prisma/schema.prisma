@@ -51,18 +51,26 @@ model MonthlyBudgetLimit {
 }
 
 model Transaction {
-  id          String   @id
-  amount      Decimal  @default(0)
-  date        DateTime @default(now())
+  id          String               @id @default(cuid())
+  amount      Decimal              @default(0)
+  date        DateTime             @default(now())
   description String?
-  tags        Tag[]
-  Budget      Budget?  @relation(fields: [budgetId], references: [id])
+  Budget      Budget?              @relation(fields: [budgetId], references: [id])
   budgetId    Int?
+  tags        TagsOnTransactions[]
 }
 
 model Tag {
-  id            String       @id
-  name          String
-  Transaction   Transaction? @relation(fields: [transactionId], references: [id])
-  transactionId String?
+  id           String               @id @default(cuid())
+  label        String               @unique
+  transactions TagsOnTransactions[]
+}
+
+model TagsOnTransactions {
+  Transaction   Transaction @relation(fields: [transactionId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  transactionId String
+  Tag           Tag         @relation(fields: [tagId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  tagId         String
+
+  @@id([transactionId, tagId])
 }

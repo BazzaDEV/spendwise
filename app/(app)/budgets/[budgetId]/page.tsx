@@ -3,8 +3,8 @@ import { cn } from '@/lib/utils'
 import { CircleChevronRight } from 'lucide-react'
 import { TransactionsTable, columns } from './transactions-table'
 import { getTransactionsForBudget } from '@/api/transactions'
-import { Button } from '@/components/ui/button'
 import NewTransactionForm from './new-transaction-form'
+import { getTagsForBudget } from '@/api/tags'
 
 interface PageProps {
   params: {
@@ -21,11 +21,20 @@ export default async function Page({ params }: PageProps) {
     return <div>{budget.error}</div>
   }
 
-  const transactions = await getTransactionsForBudget({ budgetId: budget.id })
+  const [transactions, tags] = await Promise.all([
+    getTransactionsForBudget({ budgetId: budget.id }),
+    getTagsForBudget({ budgetId: budget.id }),
+  ])
 
   if ('error' in transactions) {
     return <div>{transactions.error}</div>
   }
+
+  if ('error' in tags) {
+    return <div>{tags.error}</div>
+  }
+
+  console.log(tags)
 
   return (
     <div className="flex flex-col gap-8">
@@ -41,7 +50,10 @@ export default async function Page({ params }: PageProps) {
         columns={columns}
         data={transactions}
       />
-      <NewTransactionForm defaultValues={{ budgetId }} />
+      <NewTransactionForm
+        tags={tags}
+        defaultValues={{ budgetId }}
+      />
     </div>
   )
 }

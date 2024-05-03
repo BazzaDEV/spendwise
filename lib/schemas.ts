@@ -10,6 +10,12 @@ export type newBudgetSchema = z.infer<typeof newBudgetSchema>
 export const newTransactionSchema = z.object({
   budgetId: z.number(),
   date: z.date(),
+  tags: z.array(
+    z.object({
+      label: z.string().min(1),
+      id: z.string().cuid().optional(),
+    }),
+  ),
   description: z.string(),
   amount: z.coerce.number().min(0),
 })

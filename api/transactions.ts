@@ -24,9 +24,19 @@ export async function getTransactionsForBudget({
     where: {
       budgetId: budgetId,
     },
+    include: {
+      tags: {
+        include: {
+          Tag: true,
+        },
+      },
+    },
   })
 
-  return transactions
+  return transactions.map((transaction) => ({
+    ...transaction,
+    tags: transaction.tags.map((tag) => tag.Tag),
+  }))
 }
 
 export async function createTransaction(data: NewTransactionSchema) {
@@ -38,19 +48,51 @@ export async function createTransaction(data: NewTransactionSchema) {
     }
   }
 
+  const existingTags = data.tags.filter((t) => t.id !== undefined)
+  const newTags = data.tags.filter((t) => t.id === undefined)
+
+  await db.tag.createMany({ data: newTags, skipDuplicates: true })
+
+  const tagLabels = [...existingTags, ...newTags].map((t) => ({
+    label: t.label,
+  }))
+
+  const tags = await db.tag.findMany({
+    where: {
+      OR: tagLabels,
+    },
+  })
+
   const newTransaction = await db.transaction.create({
     data: {
-      id: generateId(15),
       amount: new Prisma.Decimal(data.amount),
       date: data.date,
       description: data.description,
       budgetId: data.budgetId,
+      tags: {
+        create: [
+          ...tags.map((tag) => ({
+            Tag: {
+              connect: {
+                id: tag.id,
+              },
+            },
+          })),
+        ],
+      },
+    },
+    include: {
+      tags: {
+        include: {
+          Tag: true,
+        },
+      },
     },
   })
 
   revalidatePath(`/budgets/${data.budgetId}`)
 
-  return newTransaction
+  return { ...newTransaction, tags: newTransaction.tags.map((tag) => tag.Tag) }
 }
 
 export async function deleteTransaction({

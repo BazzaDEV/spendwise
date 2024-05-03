@@ -25,41 +25,44 @@ import { Calendar } from '@/components/ui/calendar'
 import { cn } from '@/lib/utils'
 import { CalendarIcon } from 'lucide-react'
 import { createTransaction } from '@/api/transactions'
+import { MultiSelect } from '@/components/ui/multi-select'
+import { Tag } from '@prisma/client'
+import { useEffect } from 'react'
 
 interface Props {
+  tags: Pick<Tag, 'id' | 'label'>[]
   defaultValues?: {
     budgetId: number
   }
 }
 
-export default function NewTransactionForm({ defaultValues }: Props) {
+export default function NewTransactionForm({ defaultValues, tags }: Props) {
   const form = useForm<z.infer<typeof newTransactionSchema>>({
     resolver: zodResolver(newTransactionSchema),
     defaultValues: {
       amount: 0,
       date: new Date(),
+      tags: [],
       description: '',
       budgetId: defaultValues?.budgetId ?? 0,
     },
   })
 
+  console.log(form.getValues())
+  console.log(form.getFieldState('tags'))
+
   async function onSubmit(values: NewTransactionSchema) {
     console.log(values)
 
     const newTransaction = await createTransaction(values)
-
     console.log('New transaction:', newTransaction)
-
-    // const newBudget = await createBudget(values)
-
-    // console.log('New budget:', newBudget)
   }
 
   return (
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="grid grid-cols-3 grid-rows-2 items-center gap-2"
+        className="grid grid-cols-4 items-end gap-2"
       >
         <FormField
           control={form.control}
@@ -94,13 +97,33 @@ export default function NewTransactionForm({ defaultValues }: Props) {
                     mode="single"
                     selected={field.value}
                     onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date('1900-01-01')
-                    }
+                    // disabled={(date) =>
+                    //   date > new Date() || date < new Date('1900-01-01')
+                    // }
                     initialFocus
                   />
                 </PopoverContent>
               </Popover>
+              <FormDescription></FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="tags"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tags</FormLabel>
+              <FormControl>
+                <MultiSelect
+                  options={tags}
+                  value={field.value || []}
+                  onChange={(selectedOptions) =>
+                    field.onChange(selectedOptions)
+                  }
+                />
+              </FormControl>
               <FormDescription></FormDescription>
               <FormMessage />
             </FormItem>
@@ -138,8 +161,8 @@ export default function NewTransactionForm({ defaultValues }: Props) {
           )}
         />
         <Button
-          className="col-span-3 row-start-2"
           type="submit"
+          className="col-span-4"
         >
           Submit
         </Button>

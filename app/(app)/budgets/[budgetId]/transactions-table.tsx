@@ -1,13 +1,13 @@
 'use client'
 
-import { Transaction } from '@prisma/client'
+import { Tag, Transaction } from '@prisma/client'
 import {
   ColumnDef,
   flexRender,
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -28,8 +28,12 @@ import {
 import { format } from 'date-fns'
 import { deleteTransaction } from '@/api/transactions'
 import { useState } from 'react'
+import { Badge } from '@/components/ui/badge'
+import { cn } from '@/lib/utils'
 
-export const columns: ColumnDef<Transaction>[] = [
+type TransactionDetails = Transaction & { tags: Pick<Tag, 'id' | 'label'>[] }
+
+export const columns: ColumnDef<TransactionDetails>[] = [
   {
     accessorKey: 'date',
     header: 'Date',
@@ -37,6 +41,27 @@ export const columns: ColumnDef<Transaction>[] = [
       const date = row.getValue<Date>('date')
 
       return format(new Date(date), 'yyyy/MM/dd')
+    },
+  },
+  {
+    accessorKey: 'tags',
+    header: 'Tags',
+    cell: ({ row }) => {
+      const tags = row.getValue<Pick<Tag, 'id' | 'label'>[]>('tags')
+
+      return (
+        <div className="flex flex-wrap gap-1">
+          {tags.map((tag) => (
+            <Badge
+              variant="secondary"
+              key={tag.label}
+              className={cn('inline-flex select-none gap-1 whitespace-nowrap')}
+            >
+              {tag.label}
+            </Badge>
+          ))}
+        </div>
+      )
     },
   },
   {
