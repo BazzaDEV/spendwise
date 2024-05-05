@@ -62,7 +62,7 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
     <Form {...form}>
       <form
         onSubmit={form.handleSubmit(onSubmit)}
-        className="grid grid-cols-4 items-end gap-2"
+        className="flex flex-col gap-2"
       >
         <FormField
           control={form.control}

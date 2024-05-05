@@ -50,10 +50,15 @@ export default async function Page({ params }: PageProps) {
         columns={columns}
         data={transactions}
       />
-      <NewTransactionForm
-        tags={tags}
-        defaultValues={{ budgetId }}
-      />
+      <div className=" flex flex-col gap-4 rounded-md border border-border p-4">
+        <h2 className="text-2xl font-semibold tracking-tight">
+          Create a new transaction
+        </h2>
+        <NewTransactionForm
+          tags={tags}
+          defaultValues={{ budgetId }}
+        />
+      </div>
     </div>
   )
 }
