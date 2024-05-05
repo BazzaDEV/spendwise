@@ -8,7 +8,7 @@ export default async function Navbar() {
     <div className="flex items-center justify-between">
       <Link href="/home">Spendwise</Link>
       <form action={logout}>
-        <Button>Sign Out</Button>
+        <Button variant="secondary">Sign Out</Button>
       </form>
     </div>
   )
