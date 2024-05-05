@@ -14,14 +14,18 @@ datasource db {
 }
 
 model User {
-  id        String    @id
-  googleId  String    @unique
-  email     String    @unique
-  firstName String
-  lastName  String
-  picture   String?
-  sessions  Session[]
-  budgets   Budget[]
+  id                  String          @id
+  googleId            String          @unique
+  email               String          @unique
+  firstName           String
+  lastName            String
+  picture             String?
+  sessions            Session[]
+  budgets             Budget[]
+  transactions        Transaction[]
+  transactionId       String?
+  owedReimbursements  Reimbursement[] @relation("OwedReimbursements")
+  owingReimbursements Reimbursement[] @relation("OwingReimbursements")
 }
 
 model Session {
@@ -51,13 +55,29 @@ model MonthlyBudgetLimit {
 }
 
 model Transaction {
-  id          String               @id @default(cuid())
-  amount      Decimal              @default(0)
-  date        DateTime             @default(now())
-  description String?
-  Budget      Budget?              @relation(fields: [budgetId], references: [id])
-  budgetId    Int?
-  tags        TagsOnTransactions[]
+  id              String               @id @default(cuid())
+  amount          Decimal              @default(0)
+  date            DateTime             @default(now())
+  description     String?
+  Budget          Budget?              @relation(fields: [budgetId], references: [id])
+  budgetId        Int?
+  tags            TagsOnTransactions[]
+  isSharedExpense Boolean              @default(false)
+  payer           User                 @relation(fields: [payerId], references: [id])
+  payerId         String
+  reimbursements  Reimbursement[]
+}
+
+model Reimbursement {
+  id            Int         @id @default(autoincrement())
+  amount        Decimal
+  date          DateTime    @default(now())
+  payer         User        @relation("OwedReimbursements", fields: [payerId], references: [id])
+  payerId       String
+  recipient     User        @relation("OwingReimbursements", fields: [recipientId], references: [id])
+  recipientId   String
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  transactionId String
 }
 
 model Tag {
