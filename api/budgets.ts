@@ -35,6 +35,19 @@ export async function createBudget(data: newBudgetSchema) {
 
   const { monthlyLimit, name } = data
 
+  const existingBudget = await db.budget.findFirst({
+    where: {
+      userId: user.id,
+      name: data.name,
+    },
+  })
+
+  if (existingBudget) {
+    return {
+      error: 'A budget with this name already exists.',
+    }
+  }
+
   const newBudget = await db.budget.create({
     data: {
       userId: user.id,

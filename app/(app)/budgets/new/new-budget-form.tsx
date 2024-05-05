@@ -17,9 +17,12 @@ import { Input } from '@/components/ui/input'
 import { newBudgetSchema } from '@/lib/schemas'
 import { createBudget } from '@/api/budgets'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 export default function NewBudgetForm() {
   const [loading, setLoading] = useState<boolean>(false)
+  const router = useRouter()
 
   // 1. Define your form.
   const form = useForm<z.infer<typeof newBudgetSchema>>({
@@ -33,8 +36,16 @@ export default function NewBudgetForm() {
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof newBudgetSchema>) {
     setLoading(true)
-    await createBudget(values)
+    const budget = await createBudget(values)
     setLoading(false)
+
+    if ('error' in budget) {
+      return toast.error(`Couldn't create a new budget`, {
+        description: budget.error,
+      })
+    }
+
+    return router.push(`/budgets/${budget.id}`)
   }
 
   return (
