@@ -46,7 +46,7 @@ model MonthlyBudgetLimit {
   year     Int
   month    Int
   limit    Decimal
-  Budget   Budget? @relation(fields: [budgetId], references: [id])
+  Budget   Budget? @relation(fields: [budgetId], references: [id], onDelete: Cascade)
   budgetId Int?
 }
 

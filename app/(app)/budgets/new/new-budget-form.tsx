@@ -16,8 +16,11 @@ import {
 import { Input } from '@/components/ui/input'
 import { newBudgetSchema } from '@/lib/schemas'
 import { createBudget } from '@/api/budgets'
+import { useState } from 'react'
 
 export default function NewBudgetForm() {
+  const [loading, setLoading] = useState<boolean>(false)
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof newBudgetSchema>>({
     resolver: zodResolver(newBudgetSchema),
@@ -29,13 +32,9 @@ export default function NewBudgetForm() {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof newBudgetSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values)
-
-    const newBudget = await createBudget(values)
-
-    console.log('New budget:', newBudget)
+    setLoading(true)
+    await createBudget(values)
+    setLoading(false)
   }
 
   return (
@@ -52,6 +51,7 @@ export default function NewBudgetForm() {
               <FormLabel>Budget Name</FormLabel>
               <FormControl>
                 <Input
+                  disabled={loading}
                   placeholder="Personal"
                   {...field}
                 />
@@ -71,6 +71,7 @@ export default function NewBudgetForm() {
               <FormLabel>Monthly Limit</FormLabel>
               <FormControl>
                 <Input
+                  disabled={loading}
                   placeholder="500.00"
                   {...field}
                 />
@@ -83,7 +84,12 @@ export default function NewBudgetForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button
+          type="submit"
+          disabled={loading}
+        >
+          Submit
+        </Button>
       </form>
     </Form>
   )
