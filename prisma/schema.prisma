@@ -26,6 +26,14 @@ model User {
   transactionId       String?
   owedReimbursements  Reimbursement[] @relation("OwedReimbursements")
   owingReimbursements Reimbursement[] @relation("OwingReimbursements")
+  localUsers          LocalUser[]
+}
+
+model LocalUser {
+  id      String @id @default(cuid())
+  name    String
+  owner   User   @relation(fields: [ownerId], references: [id])
+  ownerId String
 }
 
 model Session {
@@ -78,6 +86,7 @@ model Reimbursement {
   recipientId   String
   transaction   Transaction @relation(fields: [transactionId], references: [id])
   transactionId String
+  isSettled     Boolean     @default(false)
 }
 
 model Tag {
