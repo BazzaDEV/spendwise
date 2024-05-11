@@ -4,7 +4,6 @@ import { getUserOrRedirect } from '@/lib/auth/actions'
 import db from '@/lib/db'
 import { NewTransactionSchema } from '@/lib/schemas'
 import { Prisma } from '@prisma/client'
-import { generateId } from 'lucia'
 import { revalidatePath } from 'next/cache'
 
 export async function getTransactionsForBudget({
@@ -27,7 +26,7 @@ export async function getTransactionsForBudget({
     include: {
       tags: {
         include: {
-          Tag: true,
+          tag: true,
         },
       },
     },
@@ -35,7 +34,7 @@ export async function getTransactionsForBudget({
 
   return transactions.map((transaction) => ({
     ...transaction,
-    tags: transaction.tags.map((tag) => tag.Tag),
+    tags: transaction.tags.map((tag) => tag.tag),
   }))
 }
 
@@ -68,11 +67,12 @@ export async function createTransaction(data: NewTransactionSchema) {
       amount: new Prisma.Decimal(data.amount),
       date: data.date,
       description: data.description,
+      payerId: user.id,
       budgetId: data.budgetId,
       tags: {
         create: [
           ...tags.map((tag) => ({
-            Tag: {
+            tag: {
               connect: {
                 id: tag.id,
               },
@@ -84,7 +84,7 @@ export async function createTransaction(data: NewTransactionSchema) {
     include: {
       tags: {
         include: {
-          Tag: true,
+          tag: true,
         },
       },
     },
@@ -92,7 +92,7 @@ export async function createTransaction(data: NewTransactionSchema) {
 
   revalidatePath(`/budgets/${data.budgetId}`)
 
-  return { ...newTransaction, tags: newTransaction.tags.map((tag) => tag.Tag) }
+  return { ...newTransaction, tags: newTransaction.tags.map((tag) => tag.tag) }
 }
 
 export async function deleteTransaction({

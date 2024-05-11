@@ -16,7 +16,7 @@ export async function getTagsForBudget({ budgetId }: { budgetId: number }) {
     where: {
       transactions: {
         some: {
-          Transaction: {
+          transaction: {
             budgetId: budgetId,
           },
         },

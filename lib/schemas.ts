@@ -18,16 +18,6 @@ export const newTransactionSchema = z.object({
   ),
   description: z.string(),
   amount: z.coerce.number().min(0),
-  isSharedExpense: z.boolean().default(false).optional(),
-  reimbursements: z.array(
-    z.object({
-      amount: z.coerce.number(),
-      user: z.object({
-        id: z.string().optional(),
-        name: z.string().min(1),
-      }),
-    }),
-  ),
 })
 
 export type NewTransactionSchema = z.infer<typeof newTransactionSchema>

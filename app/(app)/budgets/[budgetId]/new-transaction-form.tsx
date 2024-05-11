@@ -27,8 +27,6 @@ import { CalendarIcon } from 'lucide-react'
 import { createTransaction } from '@/api/transactions'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Tag } from '@prisma/client'
-import { Checkbox } from '@/components/ui/checkbox'
-import ExpenseSplitter from '@/components/misc/expense-splitter'
 
 interface Props {
   tags: Pick<Tag, 'id' | 'label'>[]
@@ -46,16 +44,14 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
       tags: [],
       description: '',
       budgetId: defaultValues?.budgetId ?? 0,
-      isSharedExpense: false,
-      reimbursements: [],
     },
   })
 
   async function onSubmit(values: NewTransactionSchema) {
     console.log(values)
 
-    // const newTransaction = await createTransaction(values)
-    // console.log('New transaction:', newTransaction)
+    const newTransaction = await createTransaction(values)
+    console.log('New transaction:', newTransaction)
   }
 
   return (
@@ -134,7 +130,7 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
               <FormLabel>Description</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Coffee w/ Mags @ Happy Goat"
+                  placeholder="Coffee @ Happy Goat"
                   {...field}
                 />
               </FormControl>
@@ -154,41 +150,6 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
               </FormControl>
               <FormDescription></FormDescription>
               <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="isSharedExpense"
-          render={({ field }) => (
-            <FormItem className="flex items-start space-x-3 space-y-0">
-              <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                />
-              </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel>This is a shared expense.</FormLabel>
-                <FormDescription></FormDescription>
-                <FormMessage />
-              </div>
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="reimbursements"
-          render={({ field }) => (
-            <FormItem
-              className={cn(!form.getValues().isSharedExpense && 'hidden')}
-            >
-              <FormControl>
-                <ExpenseSplitter
-                  onValueChange={(value) => field.onChange(value)}
-                  amountToSplit={form.getValues().amount}
-                />
-              </FormControl>
             </FormItem>
           )}
         />
