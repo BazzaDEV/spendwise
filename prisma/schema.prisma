@@ -74,6 +74,8 @@ model Reimbursement {
   payer         User?       @relation(fields: [payerId], references: [id])
   amount        Decimal     @default(0)
   payerId       String?
+  payerName     String?
+  note          String?
   transaction   Transaction @relation(fields: [transactionId], references: [id])
   transactionId String
 }

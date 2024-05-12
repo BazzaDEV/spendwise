@@ -27,6 +27,8 @@ import { CalendarIcon } from 'lucide-react'
 import { createTransaction } from '@/api/transactions'
 import { MultiSelect } from '@/components/ui/multi-select'
 import { Tag } from '@prisma/client'
+import ReimbursementsList from '@/components/misc/reimbursements-list'
+import { CurrencyInput } from '@/components/ui/currency-input'
 
 interface Props {
   tags: Pick<Tag, 'id' | 'label'>[]
@@ -44,8 +46,11 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
       tags: [],
       description: '',
       budgetId: defaultValues?.budgetId ?? 0,
+      reimbursements: [],
     },
   })
+
+  const amount = form.watch('amount')
 
   async function onSubmit(values: NewTransactionSchema) {
     console.log(values)
@@ -146,10 +151,28 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
             <FormItem>
               <FormLabel>Amount ($)</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <CurrencyInput
+                  value={field.value}
+                  onValueChange={(value) => field.onChange(!value ? '' : value)}
+                />
               </FormControl>
               <FormDescription></FormDescription>
               <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="reimbursements"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel></FormLabel>
+              <FormControl>
+                <ReimbursementsList
+                  onChange={field.onChange}
+                  totalAmount={amount}
+                />
+              </FormControl>
             </FormItem>
           )}
         />

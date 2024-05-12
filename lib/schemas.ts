@@ -17,7 +17,15 @@ export const newTransactionSchema = z.object({
     }),
   ),
   description: z.string(),
-  amount: z.coerce.number().min(0),
+  amount: z.union([z.number(), z.string().min(1)]),
+  reimbursements: z.array(
+    z.object({
+      tempId: z.string().length(6),
+      payerName: z.string(),
+      amount: z.coerce.number().gt(0),
+      note: z.string().optional(),
+    }),
+  ),
 })
 
 export type NewTransactionSchema = z.infer<typeof newTransactionSchema>
