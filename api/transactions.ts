@@ -80,6 +80,14 @@ export async function createTransaction(data: NewTransactionSchema) {
           })),
         ],
       },
+      reimbursements: {
+        create: [
+          ...data.reimbursements.map((reimbursement) => ({
+            ...reimbursement,
+            amount: new Prisma.Decimal(reimbursement.amount),
+          })),
+        ],
+      },
     },
     include: {
       tags: {
@@ -87,6 +95,7 @@ export async function createTransaction(data: NewTransactionSchema) {
           tag: true,
         },
       },
+      reimbursements: true,
     },
   })
 
