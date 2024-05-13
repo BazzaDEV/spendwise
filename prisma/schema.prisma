@@ -45,11 +45,10 @@ model Budget {
 }
 
 model MonthlyBudgetLimit {
-  id       Int     @id @default(autoincrement())
-  year     Int
-  month    Int
+  id       Int      @id @default(autoincrement())
+  date     DateTime @default(now())
   limit    Decimal
-  budget   Budget? @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  budget   Budget?  @relation(fields: [budgetId], references: [id], onDelete: Cascade)
   budgetId Int?
 }
 

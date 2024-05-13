@@ -19,6 +19,7 @@ import { createBudget } from '@/api/budgets'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { CurrencyInput } from '@/components/ui/currency-input'
 
 export default function NewBudgetForm() {
   const [loading, setLoading] = useState<boolean>(false)
@@ -81,10 +82,11 @@ export default function NewBudgetForm() {
             <FormItem>
               <FormLabel>Monthly Limit</FormLabel>
               <FormControl>
-                <Input
+                <CurrencyInput
                   disabled={loading}
-                  placeholder="500.00"
-                  {...field}
+                  placeholder="$500.00"
+                  value={field.value}
+                  onValueChange={(value) => field.onChange(!value ? '' : value)}
                 />
               </FormControl>
               <FormDescription>

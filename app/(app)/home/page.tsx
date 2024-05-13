@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic'
+
 import { getBudgets } from '@/api/budgets'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
@@ -16,7 +18,7 @@ export default async function Page() {
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-4">
       <h1 className="text-4xl font-semibold tracking-tighter">Home</h1>
       <form action={handleNewBudget}>
         <Button>New Budget</Button>

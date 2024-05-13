@@ -19,9 +19,106 @@ export async function getBudgets() {
     where: {
       userId: user.id,
     },
+    include: {
+      monthlyLimits: true,
+      transactions: {
+        include: {
+          reimbursements: true,
+        },
+      },
+    },
   })
 
   return budgets
+}
+
+export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
+  const user = await getUserOrRedirect()
+
+  if (!user) {
+    return {
+      error: 'Unauthenticated',
+    }
+  }
+
+  const currentDate = new Date()
+  const firstDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    1,
+  )
+  const lastDayOfMonth = new Date(
+    currentDate.getFullYear(),
+    currentDate.getMonth() + 1,
+    0,
+  )
+
+  const budget = await db.budget.findUnique({
+    where: {
+      id: data.id,
+      userId: user.id,
+    },
+    include: {
+      transactions: {
+        where: {
+          date: {
+            gte: firstDayOfMonth,
+            lte: lastDayOfMonth,
+          },
+        },
+        include: {
+          reimbursements: true,
+        },
+      },
+      monthlyLimits: {
+        where: {
+          date: {
+            gte: firstDayOfMonth,
+            lte: lastDayOfMonth,
+          },
+        },
+      },
+    },
+  })
+
+  if (!budget) {
+    return {
+      error: "Budget does not exist or you don't have permission to access it.",
+    }
+  }
+
+  const mtdGross = budget.transactions.reduce(
+    (prev, curr) => prev + curr.amount.toNumber(),
+    0,
+  )
+
+  const mtdActual = budget.transactions.reduce(
+    (prev, curr) =>
+      prev +
+      curr.amount.toNumber() -
+      curr.reimbursements.reduce(
+        (prev2, curr2) => prev2 + curr2.amount.toNumber(),
+        0,
+      ),
+    0,
+  )
+
+  const mtdLimit = budget.monthlyLimits[0].limit.toNumber()
+
+  const mtdProgress = (mtdActual / mtdLimit) * 100
+
+  console.log({ mtdGross, mtdActual, mtdLimit, mtdProgress })
+
+  return {
+    budgetId: budget.id,
+    statistics: {
+      mtd: firstDayOfMonth,
+      mtdGross,
+      mtdActual,
+      mtdLimit,
+      mtdProgress,
+    },
+  }
 }
 
 export async function createBudget(data: newBudgetSchema) {
@@ -54,8 +151,7 @@ export async function createBudget(data: newBudgetSchema) {
       name: name,
       monthlyLimits: {
         create: {
-          year: new Date().getFullYear(),
-          month: new Date().getMonth(),
+          date: new Date(),
           limit: new Prisma.Decimal(monthlyLimit),
         },
       },
