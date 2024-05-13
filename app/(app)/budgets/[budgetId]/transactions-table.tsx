@@ -7,7 +7,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { MoreHorizontal, X } from 'lucide-react'
+import { MoreHorizontal, Pencil, Trash, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -30,6 +30,7 @@ import { deleteTransaction } from '@/api/transactions'
 import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
+import Link from 'next/link'
 
 type TransactionDetails = Transaction & { tags: Pick<Tag, 'id' | 'label'>[] }
 
@@ -105,7 +106,14 @@ export const columns: ColumnDef<TransactionDetails>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
-            <DropdownMenuItem onClick={handleDelete}>Delete</DropdownMenuItem>
+            <DropdownMenuItem asChild>
+              <Link href={`/transactions/${transaction.id}/edit`}>
+                <Pencil className="mr-1.5 size-4" /> Edit
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleDelete}>
+              <Trash className="mr-1.5 size-4" /> Delete
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
