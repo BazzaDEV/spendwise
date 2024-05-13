@@ -19,14 +19,14 @@ export async function getBudgets() {
     where: {
       userId: user.id,
     },
-    include: {
-      monthlyLimits: true,
-      transactions: {
-        include: {
-          reimbursements: true,
-        },
-      },
-    },
+    // include: {
+    //   monthlyLimits: true,
+    //   transactions: {
+    //     include: {
+    //       reimbursements: true,
+    //     },
+    //   },
+    // },
   })
 
   return budgets

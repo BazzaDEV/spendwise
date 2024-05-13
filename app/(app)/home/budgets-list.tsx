@@ -20,12 +20,12 @@ import { getBudgetDetails } from '@/api/budgets'
 import { formatValue } from 'react-currency-input-field'
 import Link from 'next/link'
 
-type BudgetExtended = Budget & {
-  monthlyLimits: MonthlyBudgetLimit[]
-  transactions: Transaction & { reimbursements: Reimbursement[] }
-}
+// type BudgetExtended = Budget & {
+//   monthlyLimits: MonthlyBudgetLimit[]
+//   transactions: Transaction & { reimbursements: Reimbursement[] }
+// }
 
-export const BudgetsList = ({ budgets }: { budgets: BudgetExtended[] }) => {
+export const BudgetsList = ({ budgets }: { budgets: Budget[] }) => {
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
       {budgets.map((budget) => (
@@ -38,7 +38,7 @@ export const BudgetsList = ({ budgets }: { budgets: BudgetExtended[] }) => {
   )
 }
 
-const BudgetCard = ({ budget }: { budget: BudgetExtended }) => {
+const BudgetCard = ({ budget }: { budget: Budget }) => {
   const { status, data, error } = useQuery({
     queryKey: ['budgets', budget.id],
     queryFn: () => getBudgetDetails(budget),
