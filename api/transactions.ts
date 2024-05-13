@@ -3,7 +3,7 @@
 import { getUserOrRedirect } from '@/lib/auth/actions'
 import db from '@/lib/db'
 import { NewTransactionSchema } from '@/lib/schemas'
-import { Prisma } from '@prisma/client'
+import { Prisma, Transaction } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
 export async function getTransactionsForBudget({
@@ -102,6 +102,30 @@ export async function createTransaction(data: NewTransactionSchema) {
   revalidatePath(`/budgets/${data.budgetId}`)
 
   return { ...newTransaction, tags: newTransaction.tags.map((tag) => tag.tag) }
+}
+
+export async function getTransaction(data: Pick<Transaction, 'id'>) {
+  const user = await getUserOrRedirect()
+
+  if (!user) {
+    return {
+      error: 'Unauthenticated',
+    }
+  }
+
+  const transaction = await db.transaction.findUnique({
+    where: {
+      id: data.id,
+    },
+  })
+
+  if (!transaction) {
+    return {
+      error: 'Transaction does not exist',
+    }
+  }
+
+  return transaction
 }
 
 export async function deleteTransaction({
