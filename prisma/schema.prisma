@@ -42,6 +42,7 @@ model Budget {
   userId        String?
   monthlyLimits MonthlyBudgetLimit[]
   transactions  Transaction[]
+  tags          Tag[]
 }
 
 model MonthlyBudgetLimit {
@@ -81,8 +82,10 @@ model Reimbursement {
 
 model Tag {
   id           String             @id @default(cuid())
-  label        String             @unique
+  label        String
+  budget       Budget?            @relation(fields: [budgetId], references: [id])
   transactions TagOnTransaction[]
+  budgetId     Int?
 }
 
 model TagOnTransaction {

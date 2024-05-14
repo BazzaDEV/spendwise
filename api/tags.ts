@@ -14,13 +14,7 @@ export async function getTagsForBudget({ budgetId }: { budgetId: number }) {
 
   const tags = await db.tag.findMany({
     where: {
-      transactions: {
-        some: {
-          transaction: {
-            budgetId: budgetId,
-          },
-        },
-      },
+      budgetId: budgetId,
     },
   })
 

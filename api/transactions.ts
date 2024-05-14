@@ -5,6 +5,7 @@ import db from '@/lib/db'
 import { EditTransactionSchema, NewTransactionSchema } from '@/lib/schemas'
 import { Prisma, Transaction } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
+import { diff, fork } from 'radash'
 
 export async function getTransactionsForBudget({
   budgetId,
@@ -116,6 +117,47 @@ export async function updateTransaction(data: EditTransactionSchema) {
   // Then determine what has been changed, updated, and removed
   // Then perform the appropriate actions to match the database with
   // the new changes
+}
+
+async function updateTagsForTransaction(
+  transactionId: string,
+  updatedTags: { id?: string; label: string }[],
+) {
+  // Fetch the original tags associated with the transaction
+  const originalTags = (
+    await db.tagOnTransaction.findMany({
+      where: {
+        transactionId: transactionId,
+      },
+      include: {
+        tag: true,
+      },
+    })
+  ).map((tag) => tag.tag)
+
+  // Separate brand-new tags, and existing tags in the database
+  const [createdTags, existingTags] = fork(
+    updatedTags,
+    (t) => t.id === undefined,
+  )
+
+  // Tags that were removed from the transaction
+  const removedTags = diff(originalTags, existingTags)
+
+  // Tags that were added to the transaction
+  const addedTags = diff(existingTags, originalTags)
+
+  // Create new tags in the database
+  // Add them to the transaction
+  // await Promise.all(createdTags.map(async t => {
+  //   const existingTag = await db.tagOnTransaction.findUnique({
+  //     where: {
+  //       transaction: {
+  //         budgetId:
+  //       }
+  //     }
+  //   })
+  // }))
 }
 
 export async function getTransaction(data: Pick<Transaction, 'id'>) {
