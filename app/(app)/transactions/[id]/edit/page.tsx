@@ -5,6 +5,7 @@ import {
   QueryClient,
 } from '@tanstack/react-query'
 import EditTransaction from './edit-transaction'
+import { getBudgets } from '@/api/budgets'
 
 interface PageProps {
   params: {
@@ -15,13 +16,20 @@ interface PageProps {
 export default async function Page({ params }: PageProps) {
   const queryClient = new QueryClient()
 
-  await queryClient.prefetchQuery({
+  const transactions = queryClient.prefetchQuery({
     queryKey: ['transactions', params.id],
     queryFn: () => getTransaction({ id: params.id }),
   })
 
+  const budgets = queryClient.prefetchQuery({
+    queryKey: ['budgets'],
+    queryFn: () => getBudgets(),
+  })
+
+  await Promise.allSettled([transactions, budgets])
+
   return (
-    <HydrationBoundary>
+    <HydrationBoundary state={dehydrate(queryClient)}>
       <EditTransaction id={params.id} />
     </HydrationBoundary>
   )

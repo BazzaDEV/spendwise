@@ -2,6 +2,7 @@
 
 import { getTransaction } from '@/api/transactions'
 import { useQuery } from '@tanstack/react-query'
+import EditTransactionForm from './edit-transaction-form'
 
 interface EditTransactionProps {
   id: string
@@ -20,7 +21,8 @@ export default function EditTransaction({ id }: EditTransactionProps) {
   } else {
     return (
       <div>
-        <pre>{JSON.stringify(data, null, '\t')}</pre>
+        {/* <pre>{JSON.stringify(data, null, '\t')}</pre> */}
+        <EditTransactionForm data={data} />
       </div>
     )
   }

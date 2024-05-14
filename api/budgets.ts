@@ -10,9 +10,7 @@ export async function getBudgets() {
   const user = await getUserOrRedirect()
 
   if (!user) {
-    return {
-      error: 'Unauthenticated',
-    }
+    throw new Error('Unauthenticated')
   }
 
   const budgets = await db.budget.findMany({
@@ -29,7 +27,10 @@ export async function getBudgets() {
     // },
   })
 
-  return budgets
+  return budgets.map((budget) => ({
+    ...budget,
+    reserve: budget.reserve.toNumber(),
+  }))
 }
 
 export async function getBudgetDetails(data: Pick<Budget, 'id'>) {

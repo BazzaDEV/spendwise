@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useQuery } from '@tanstack/react-query'
-import { getBudgetDetails } from '@/api/budgets'
+import { getBudgetDetails, getBudgets } from '@/api/budgets'
 import { formatValue } from 'react-currency-input-field'
 import Link from 'next/link'
 
@@ -25,10 +25,23 @@ import Link from 'next/link'
 //   transactions: Transaction & { reimbursements: Reimbursement[] }
 // }
 
-export const BudgetsList = ({ budgets }: { budgets: Budget[] }) => {
+export const BudgetsList = () => {
+  const { data, error, status } = useQuery({
+    queryKey: ['budgets'],
+    queryFn: () => getBudgets(),
+  })
+
+  if (status === 'pending') {
+    return <div>Loading...</div>
+  }
+
+  if (status === 'error') {
+    return <div>Error: {error.message}</div>
+  }
+
   return (
     <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-      {budgets.map((budget) => (
+      {data.map((budget) => (
         <BudgetCard
           key={budget.id}
           budget={budget}
@@ -38,7 +51,11 @@ export const BudgetsList = ({ budgets }: { budgets: Budget[] }) => {
   )
 }
 
-const BudgetCard = ({ budget }: { budget: Budget }) => {
+const BudgetCard = ({
+  budget,
+}: {
+  budget: Omit<Budget, 'reserve'> & { reserve: number }
+}) => {
   const { status, data, error } = useQuery({
     queryKey: ['budgets', budget.id],
     queryFn: () => getBudgetDetails(budget),

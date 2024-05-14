@@ -41,7 +41,8 @@ export const editReimbursementSchema = z.object({
 export type EditReimbursementSchema = z.infer<typeof editReimbursementSchema>
 
 export const editTransactionSchema = z.object({
-  budgetId: z.number(),
+  id: z.string().cuid(),
+  budgetId: z.coerce.number().optional(),
   date: z.date(),
   tags: z.array(
     z.object({
@@ -49,7 +50,7 @@ export const editTransactionSchema = z.object({
       id: z.string().cuid().optional(),
     }),
   ),
-  description: z.string(),
+  description: z.string().optional(),
   amount: z.union([z.number(), z.string().min(1)]),
   reimbursements: z.array(newReimbursementSchema),
 })

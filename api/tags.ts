@@ -26,3 +26,15 @@ export async function getTagsForBudget({ budgetId }: { budgetId: number }) {
 
   return tags
 }
+
+export async function getTags() {
+  const user = await getUserOrRedirect()
+
+  if (!user) {
+    throw new Error('Unauthenticated')
+  }
+
+  const tags = await db.tag.findMany()
+
+  return tags
+}
