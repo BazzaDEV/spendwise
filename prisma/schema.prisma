@@ -35,22 +35,32 @@ model Session {
 }
 
 model Budget {
-  id            Int                  @id @default(autoincrement())
-  name          String
-  reserve       Decimal              @default(0)
-  user          User?                @relation(fields: [userId], references: [id])
-  userId        String?
-  monthlyLimits MonthlyBudgetLimit[]
-  transactions  Transaction[]
-  tags          Tag[]
+  id           Int           @id @default(autoincrement())
+  name         String
+  reserve      Decimal       @default(0)
+  user         User?         @relation(fields: [userId], references: [id])
+  userId       String?
+  budgetLimits BudgetLimit[]
+  transactions Transaction[]
+  tags         Tag[]
 }
 
-model MonthlyBudgetLimit {
-  id       Int      @id @default(autoincrement())
-  date     DateTime @default(now())
-  limit    Decimal
-  budget   Budget?  @relation(fields: [budgetId], references: [id], onDelete: Cascade)
-  budgetId Int?
+model BudgetLimit {
+  id           Int        @id @default(autoincrement())
+  date         DateTime   @default(now())
+  amount       Decimal
+  startDate    DateTime   @default(now())
+  endDate      DateTime?
+  timePeriod   TimePeriod @relation(fields: [timePeriodId], references: [id])
+  timePeriodId Int
+  budget       Budget?    @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  budgetId     Int?
+}
+
+model TimePeriod {
+  id           Int           @id @default(autoincrement())
+  name         String        @unique // 'monthly', 'yearly'
+  budgetLimits BudgetLimit[]
 }
 
 model Transaction {
