@@ -24,8 +24,8 @@ CREATE UNIQUE INDEX "TimePeriod_name_key" ON "TimePeriod"("name");
 
 -- Insert default time periods
 INSERT INTO "TimePeriod" ("name") VALUES
-('monthly'),
-('yearly');
+('Monthly'),
+('Yearly');
 
 -- Migrate data to new table
 INSERT INTO "BudgetLimit" ("createdAt", "updatedAt", "amount", "timePeriodId", "budgetId")
