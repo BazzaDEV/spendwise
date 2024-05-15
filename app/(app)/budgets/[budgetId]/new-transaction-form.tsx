@@ -63,15 +63,11 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
   const transactionAmount = form.watch('amount')
   const reimbursements = form.watch('reimbursements')
 
-  // console.log(JSON.stringify(form.watch('reimbursements'), null, '\t'))
-
   async function onSubmit(values: NewTransactionSchema) {
-    const newTransaction = await createTransaction({
+    await createTransaction({
       ...values,
       reimbursements: isShared ? values.reimbursements : [],
     })
-
-    console.log('New transaction:', newTransaction)
   }
 
   function splitEvenly() {

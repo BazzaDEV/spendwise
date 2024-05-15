@@ -33,12 +33,13 @@ import { format } from 'date-fns'
 import { CalendarIcon, Trash } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { MultiSelect } from '@/components/ui/multi-select'
-import { getTags, getTagsForBudget } from '@/api/tags'
+import { getTagsForBudget } from '@/api/tags'
 import { CurrencyInput } from '@/components/ui/currency-input'
 import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import Link from 'next/link'
+import { updateTransaction } from '@/api/transactions'
 
 interface EditTransactionFormProps {
   data: EditTransactionSchema
@@ -56,22 +57,10 @@ export default function EditTransactionForm({
     data.reimbursements.length > 0 || false,
   )
 
-  const budgets = useQuery({
-    queryKey: ['budgets'],
-    queryFn: () => getBudgets(),
-  })
-
-  const tagsQuery = useQuery({
-    queryKey: ['tags'],
-    queryFn: () => getTags(),
-  })
-
-  const tags =
-    (!tagsQuery.isError && !tagsQuery.isPending && tagsQuery.data) || []
-
   const form = useForm<EditTransactionSchema>({
     resolver: zodResolver(editTransactionSchema),
     defaultValues: {
+      id: data.id,
       amount: data.amount,
       date: data.date,
       tags: data.tags,
@@ -88,6 +77,20 @@ export default function EditTransactionForm({
 
   const transactionAmount = form.watch('amount')
   const reimbursements = form.watch('reimbursements')
+  const budgetId = Number(form.watch('budgetId'))
+
+  const budgets = useQuery({
+    queryKey: ['budgets'],
+    queryFn: () => getBudgets(),
+  })
+
+  const tagsQuery = useQuery({
+    queryKey: ['budget-tags', budgetId],
+    queryFn: () => getTagsForBudget({ budgetId }),
+  })
+
+  const tags =
+    (!tagsQuery.isError && !tagsQuery.isPending && tagsQuery.data) || []
 
   function splitEvenly() {
     const splitAmount = Number(transactionAmount) / (reimbursements.length + 1)
@@ -101,8 +104,10 @@ export default function EditTransactionForm({
     form.setValue('reimbursements', updatedReimbursements)
   }
 
+  // console.log(JSON.stringify(form.formState.errors, null, '\t'))
+
   async function onSubmit(values: EditTransactionSchema) {
-    console.log(JSON.stringify(values, null, '\t'))
+    await updateTransaction(values)
   }
 
   return (
@@ -365,7 +370,9 @@ export default function EditTransactionForm({
           </Button>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Button type="submit">Save changes</Button>
+          <Button onClick={() => form.handleSubmit(onSubmit)}>
+            Save changes
+          </Button>
           <Button
             type="button"
             variant="secondary"
