@@ -58,8 +58,8 @@ model Transaction {
   amount         Decimal            @default(0)
   date           DateTime           @default(now())
   description    String?
-  budget         Budget?            @relation(fields: [budgetId], references: [id])
-  budgetId       Int?
+  budget         Budget             @relation(fields: [budgetId], references: [id])
+  budgetId       Int
   tags           TagOnTransaction[]
   payer          User               @relation(fields: [payerId], references: [id])
   payerId        String

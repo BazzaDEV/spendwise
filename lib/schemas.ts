@@ -42,7 +42,7 @@ export type EditReimbursementSchema = z.infer<typeof editReimbursementSchema>
 
 export const editTransactionSchema = z.object({
   id: z.string(),
-  budgetId: z.coerce.number().optional(),
+  budgetId: z.coerce.number(),
   date: z.date(),
   tags: z.array(
     z.object({
