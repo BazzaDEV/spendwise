@@ -40,21 +40,20 @@ model Budget {
   reserve      Decimal       @default(0)
   user         User?         @relation(fields: [userId], references: [id])
   userId       String?
-  budgetLimits BudgetLimit[]
   transactions Transaction[]
   tags         Tag[]
+  budgetLimit  BudgetLimit?
 }
 
 model BudgetLimit {
   id           Int        @id @default(autoincrement())
-  date         DateTime   @default(now())
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
   amount       Decimal
-  startDate    DateTime   @default(now())
-  endDate      DateTime?
   timePeriod   TimePeriod @relation(fields: [timePeriodId], references: [id])
   timePeriodId Int
-  budget       Budget?    @relation(fields: [budgetId], references: [id], onDelete: Cascade)
-  budgetId     Int?
+  budgetId     Int        @unique
+  budget       Budget     @relation(fields: [budgetId], references: [id])
 }
 
 model TimePeriod {
