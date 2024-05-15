@@ -1,9 +1,6 @@
 'use client'
 
-import { NewTransactionSchema, newTransactionSchema } from '@/lib/schemas'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { useFieldArray, useForm } from 'react-hook-form'
-import { z } from 'zod'
+import { getBudgets } from '@/api/budgets'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -15,43 +12,61 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { format } from 'date-fns'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { Calendar } from '@/components/ui/calendar'
+import { EditTransactionSchema, editTransactionSchema } from '@/lib/schemas'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery } from '@tanstack/react-query'
+import { useFieldArray, useForm } from 'react-hook-form'
 import { cn } from '@/lib/utils'
+import { format } from 'date-fns'
 import { CalendarIcon, Trash } from 'lucide-react'
-import { createTransaction } from '@/api/transactions'
+import { Calendar } from '@/components/ui/calendar'
 import { MultiSelect } from '@/components/ui/multi-select'
-import { Tag } from '@prisma/client'
+import { getTagsForBudget } from '@/api/tags'
 import { CurrencyInput } from '@/components/ui/currency-input'
-import { Label } from '@/components/ui/label'
 import { useState } from 'react'
+import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
+import Link from 'next/link'
+import { updateTransaction } from '@/api/transactions'
 
-interface Props {
-  tags: Pick<Tag, 'id' | 'label'>[]
-  defaultValues?: {
-    budgetId: number
-  }
+interface EditTransactionFormProps {
+  data: EditTransactionSchema
 }
 
-export default function NewTransactionForm({ defaultValues, tags }: Props) {
-  const [yourShare, setYourShare] = useState<number | string>(0)
-  const [isShared, setIsShared] = useState<boolean>(false)
+export default function EditTransactionForm({
+  data,
+}: EditTransactionFormProps) {
+  const actualAmount =
+    Number(data.amount) -
+    data.reimbursements.reduce((prev, curr) => prev + curr.amount, 0)
 
-  const form = useForm<z.infer<typeof newTransactionSchema>>({
-    resolver: zodResolver(newTransactionSchema),
+  const [yourShare, setYourShare] = useState<number | string>(actualAmount)
+  const [isShared, setIsShared] = useState<boolean>(
+    data.reimbursements.length > 0 || false,
+  )
+
+  const form = useForm<EditTransactionSchema>({
+    resolver: zodResolver(editTransactionSchema),
     defaultValues: {
-      amount: 0,
-      date: new Date(),
-      tags: [],
-      description: '',
-      budgetId: defaultValues?.budgetId ?? 0,
-      reimbursements: [],
+      id: data.id,
+      amount: data.amount,
+      date: data.date,
+      tags: data.tags,
+      description: data.description,
+      budgetId: data.budgetId,
+      reimbursements: data.reimbursements,
     },
   })
 
@@ -62,13 +77,20 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
 
   const transactionAmount = form.watch('amount')
   const reimbursements = form.watch('reimbursements')
+  const budgetId = Number(form.watch('budgetId'))
 
-  async function onSubmit(values: NewTransactionSchema) {
-    await createTransaction({
-      ...values,
-      reimbursements: isShared ? values.reimbursements : [],
-    })
-  }
+  const budgets = useQuery({
+    queryKey: ['budgets'],
+    queryFn: () => getBudgets(),
+  })
+
+  const tagsQuery = useQuery({
+    queryKey: ['budget-tags', budgetId],
+    queryFn: () => getTagsForBudget({ budgetId }),
+  })
+
+  const tags =
+    (!tagsQuery.isError && !tagsQuery.isPending && tagsQuery.data) || []
 
   function splitEvenly() {
     const splitAmount = Number(transactionAmount) / (reimbursements.length + 1)
@@ -82,13 +104,52 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
     form.setValue('reimbursements', updatedReimbursements)
   }
 
+  // console.log(JSON.stringify(form.formState.errors, null, '\t'))
+
+  async function onSubmit(values: EditTransactionSchema) {
+    await updateTransaction(values)
+  }
+
   return (
     <Form {...form}>
       <form
-        onSubmit={form.handleSubmit(onSubmit)}
         className="flex flex-col gap-6"
+        onSubmit={form.handleSubmit(onSubmit)}
       >
         <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="budgetId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Budget</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={String(field.value)}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a budget" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {!budgets.isPending &&
+                      !budgets.isError &&
+                      budgets.data.map((budget) => (
+                        <SelectItem
+                          key={budget.id}
+                          value={String(budget.id)}
+                        >
+                          {budget.name}
+                        </SelectItem>
+                      ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription></FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="date"
@@ -188,6 +249,7 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
             )}
           />
         </div>
+
         <div className="inline-flex items-center gap-2">
           <Checkbox
             defaultChecked={false}
@@ -307,12 +369,18 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
             Add Reimbursement
           </Button>
         </div>
-        <Button
-          type="submit"
-          className="col-span-4"
-        >
-          Submit
-        </Button>
+        <div className="grid grid-cols-2 gap-2">
+          <Button onClick={() => form.handleSubmit(onSubmit)}>
+            Save changes
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            asChild
+          >
+            <Link href={`/budgets/${data.budgetId}`}>Cancel</Link>
+          </Button>
+        </div>
       </form>
     </Form>
   )

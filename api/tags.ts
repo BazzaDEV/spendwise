@@ -7,20 +7,12 @@ export async function getTagsForBudget({ budgetId }: { budgetId: number }) {
   const user = await getUserOrRedirect()
 
   if (!user) {
-    return {
-      error: 'Unauthenticated',
-    }
+    throw new Error('Unauthenticated')
   }
 
   const tags = await db.tag.findMany({
     where: {
-      transactions: {
-        some: {
-          transaction: {
-            budgetId: budgetId,
-          },
-        },
-      },
+      budgetId: budgetId,
     },
   })
 

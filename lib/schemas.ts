@@ -30,3 +30,29 @@ export const newTransactionSchema = z.object({
 })
 
 export type NewTransactionSchema = z.infer<typeof newTransactionSchema>
+
+export const editReimbursementSchema = z.object({
+  id: z.string().cuid().optional(),
+  payerName: z.string().min(1, 'Name is required'),
+  amount: z.coerce.number().gt(0, 'Amount must be greater than $0'),
+  note: z.string().optional(),
+})
+
+export type EditReimbursementSchema = z.infer<typeof editReimbursementSchema>
+
+export const editTransactionSchema = z.object({
+  id: z.string(),
+  budgetId: z.coerce.number(),
+  date: z.date(),
+  tags: z.array(
+    z.object({
+      label: z.string().min(1),
+      id: z.string().cuid().optional(),
+    }),
+  ),
+  description: z.string().optional(),
+  amount: z.union([z.number(), z.string().min(1)]),
+  reimbursements: z.array(editReimbursementSchema),
+})
+
+export type EditTransactionSchema = z.infer<typeof editTransactionSchema>
