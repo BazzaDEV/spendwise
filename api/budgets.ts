@@ -77,14 +77,7 @@ export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
           reimbursements: true,
         },
       },
-      monthlyLimits: {
-        where: {
-          date: {
-            gte: firstDayOfMonth,
-            lte: lastDayOfMonth,
-          },
-        },
-      },
+      budgetLimit: true,
     },
   })
 
@@ -110,7 +103,7 @@ export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
     0,
   )
 
-  const mtdLimit = budget.monthlyLimits[0].limit.toNumber()
+  const mtdLimit = budget.budgetLimit!.amount.toNumber()
 
   const mtdProgress = (mtdActual / mtdLimit) * 100
 
