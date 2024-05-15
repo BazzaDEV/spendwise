@@ -30,10 +30,6 @@ export default async function Page({ params }: PageProps) {
     return <div>{transactions.error}</div>
   }
 
-  if ('error' in tags) {
-    return <div>{tags.error}</div>
-  }
-
   console.log(tags)
 
   return (
