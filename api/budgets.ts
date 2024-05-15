@@ -2,8 +2,8 @@
 
 import { getUserOrRedirect } from '@/lib/auth/actions'
 import db from '@/lib/db'
-import { newBudgetSchema } from '@/lib/schemas'
-import { Budget, Prisma } from '@prisma/client'
+import { NewBudgetSchema } from '@/lib/schemas'
+import { Budget } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
 
 export async function getBudgets() {
@@ -31,6 +31,12 @@ export async function getBudgets() {
     ...budget,
     reserve: budget.reserve.toNumber(),
   }))
+}
+
+export async function getTimePeriods() {
+  const timePeriods = await db.timePeriod.findMany()
+
+  return timePeriods
 }
 
 export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
@@ -71,14 +77,7 @@ export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
           reimbursements: true,
         },
       },
-      monthlyLimits: {
-        where: {
-          date: {
-            gte: firstDayOfMonth,
-            lte: lastDayOfMonth,
-          },
-        },
-      },
+      budgetLimit: true,
     },
   })
 
@@ -104,7 +103,7 @@ export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
     0,
   )
 
-  const mtdLimit = budget.monthlyLimits[0].limit.toNumber()
+  const mtdLimit = budget.budgetLimit!.amount.toNumber()
 
   const mtdProgress = (mtdActual / mtdLimit) * 100
 
@@ -122,7 +121,7 @@ export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
   }
 }
 
-export async function createBudget(data: newBudgetSchema) {
+export async function createBudget(data: NewBudgetSchema) {
   const user = await getUserOrRedirect()
 
   if (!user) {
@@ -130,8 +129,6 @@ export async function createBudget(data: newBudgetSchema) {
       error: 'Unauthenticated',
     }
   }
-
-  const { monthlyLimit, name } = data
 
   const existingBudget = await db.budget.findFirst({
     where: {
@@ -149,11 +146,11 @@ export async function createBudget(data: newBudgetSchema) {
   const newBudget = await db.budget.create({
     data: {
       userId: user.id,
-      name: name,
-      monthlyLimits: {
+      name: data.name,
+      budgetLimit: {
         create: {
-          date: new Date(),
-          limit: new Prisma.Decimal(monthlyLimit),
+          timePeriodId: data.budgetLimit.periodId,
+          amount: data.budgetLimit.amount,
         },
       },
     },

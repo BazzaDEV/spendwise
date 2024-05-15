@@ -1,29 +1,13 @@
 'use client'
 
-import {
-  Budget,
-  MonthlyBudgetLimit,
-  Reimbursement,
-  Transaction,
-} from '@prisma/client'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card'
+import { Budget } from '@prisma/client'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useQuery } from '@tanstack/react-query'
 import { getBudgetDetails, getBudgets } from '@/api/budgets'
 import { formatValue } from 'react-currency-input-field'
 import Link from 'next/link'
-
-// type BudgetExtended = Budget & {
-//   monthlyLimits: MonthlyBudgetLimit[]
-//   transactions: Transaction & { reimbursements: Reimbursement[] }
-// }
+import { cn } from '@/lib/utils'
 
 export const BudgetsList = () => {
   const { data, error, status } = useQuery({
@@ -88,7 +72,17 @@ const BudgetCard = ({
               <span className="font-medium">{mtdProgress.toFixed(0)}%</span>
             </div>
           </div>
-          <Progress value={mtdProgress} />
+          <Progress
+            value={mtdProgress}
+            className={cn({
+              '*:bg-gradient-to-r *:from-blue-600 *:to-blue-500':
+                mtdProgress < 50,
+              '*:bg-gradient-to-r *:from-yellow-600 *:to-yellow-500':
+                mtdProgress < 75 && mtdProgress >= 50,
+              '*:bg-gradient-to-r *:from-red-600 *:to-red-500':
+                mtdProgress >= 75,
+            })}
+          />
           <div className="mt-2 flex justify-between text-sm">
             <span className="text-muted-foreground">
               Spent: {format2(mtdActual)}
@@ -98,9 +92,6 @@ const BudgetCard = ({
             </span>
           </div>
         </CardContent>
-        {/* <CardFooter> */}
-        {/*   <p>Card Footer</p> */}
-        {/* </CardFooter> */}
       </Card>
     </Link>
   )

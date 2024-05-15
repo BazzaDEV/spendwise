@@ -1,11 +1,16 @@
 import { z } from 'zod'
 
-export const newBudgetSchema = z.object({
-  name: z.string().min(3),
-  monthlyLimit: z.coerce.number().gt(0),
+export const newBudgetLimitSchema = z.object({
+  periodId: z.coerce.number(),
+  amount: z.union([z.number(), z.string().min(1)]),
 })
 
-export type newBudgetSchema = z.infer<typeof newBudgetSchema>
+export const newBudgetSchema = z.object({
+  name: z.string().min(3),
+  budgetLimit: newBudgetLimitSchema,
+})
+
+export type NewBudgetSchema = z.infer<typeof newBudgetSchema>
 
 export const newReimbursementSchema = z.object({
   payerName: z.string().min(1, 'Name is required'),
