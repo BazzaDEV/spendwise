@@ -40,6 +40,8 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import Link from 'next/link'
 import { updateTransaction } from '@/api/transactions'
+import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 
 interface EditTransactionFormProps {
   data: EditTransactionSchema
@@ -48,6 +50,8 @@ interface EditTransactionFormProps {
 export default function EditTransactionForm({
   data,
 }: EditTransactionFormProps) {
+  const router = useRouter()
+
   const actualAmount =
     Number(data.amount) -
     data.reimbursements.reduce((prev, curr) => prev + curr.amount, 0)
@@ -108,6 +112,9 @@ export default function EditTransactionForm({
 
   async function onSubmit(values: EditTransactionSchema) {
     await updateTransaction(values)
+
+    toast.success('Transaction was updated.')
+    router.push(`/budgets/${values.budgetId}`)
   }
 
   return (
