@@ -52,7 +52,7 @@ export const editTransactionSchema = z.object({
   ),
   description: z.string().optional(),
   amount: z.union([z.number(), z.string().min(1)]),
-  reimbursements: z.array(newReimbursementSchema),
+  reimbursements: z.array(editReimbursementSchema),
 })
 
 export type EditTransactionSchema = z.infer<typeof editTransactionSchema>
