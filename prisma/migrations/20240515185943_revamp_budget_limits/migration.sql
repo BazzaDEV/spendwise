@@ -33,7 +33,7 @@ SELECT
     "date" AS "createdAt",
     CURRENT_TIMESTAMP AS "updatedAt",
     "limit" AS "amount",
-    (SELECT "id" FROM "TimePeriod" WHERE "name" = 'yearly') AS "timePeriodId",
+    (SELECT "id" FROM "TimePeriod" WHERE "name" = 'Yearly') AS "timePeriodId",
     "budgetId"
 FROM "MonthlyBudgetLimit";
 
