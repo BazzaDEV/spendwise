@@ -16,9 +16,9 @@ export default async function Layout({
 
   return (
     <Providers>
-      <div className="min-h-screen p-4">
+      <div className="mx-auto min-h-screen max-w-screen-xl p-4">
         <Navbar />
-        <div>{children}</div>
+        <div className="py-12">{children}</div>
       </div>
     </Providers>
   )
