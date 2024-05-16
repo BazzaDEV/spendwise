@@ -12,11 +12,13 @@ export default function Page() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
-      <h1 className="text-4xl font-semibold tracking-tighter">Home</h1>
-      <form action={handleNewBudget}>
-        <Button>New Budget</Button>
-      </form>
+    <div className="flex flex-col gap-8">
+      <div className="flex w-full justify-between">
+        <h1 className="text-4xl font-semibold tracking-tighter">My Budgets</h1>
+        <form action={handleNewBudget}>
+          <Button>New Budget</Button>
+        </form>
+      </div>
       <BudgetsList />
     </div>
   )
