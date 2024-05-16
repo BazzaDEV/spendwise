@@ -87,10 +87,10 @@ export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
   let endDate: Date
 
   // Determine the start and end dates based on the time period
-  if (budget.budgetLimit?.timePeriod?.name === 'yearly') {
+  if (budget.budgetLimit?.timePeriod?.name === 'Yearly') {
     startDate = startOfYear
     endDate = endOfYear
-  } else if (budget.budgetLimit?.timePeriod?.name === 'monthly') {
+  } else if (budget.budgetLimit?.timePeriod?.name === 'Monthly') {
     startDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1) // First day of the current month
     endDate = new Date(
       currentDate.getFullYear(),
@@ -129,7 +129,7 @@ export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
     0,
   )
 
-  const mtdLimit = budget.budgetLimit!.amount.toNumber()
+  const mtdLimit = budget.budgetLimit.amount.toNumber()
 
   const mtdProgress = (mtdActual / mtdLimit) * 100
 
