@@ -21,7 +21,7 @@ export default async function Layout({
       <TooltipProvider>
         <div className="min-h-screen p-4">
           <Navbar />
-          <div>{children}</div>
+          <div className="mx-auto max-w-screen-xl py-10">{children}</div>
         </div>
         <Toaster richColors />
       </TooltipProvider>
