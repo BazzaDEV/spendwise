@@ -2,10 +2,14 @@
 
 import { getUserOrRedirect } from '@/lib/auth/actions'
 import db from '@/lib/db'
-import { EditTransactionSchema, NewTransactionSchema } from '@/lib/schemas'
+import {
+  EditTransactionSchema,
+  NewTransactionSchema,
+  UpdateTransactionSchema,
+} from '@/lib/schemas'
 import { Prisma, Transaction } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
-import { diff, fork, unique } from 'radash'
+import { diff, fork, omit, unique } from 'radash'
 
 export async function getTransactionsForBudget({
   budgetId,
@@ -222,6 +226,101 @@ export async function updateTransaction(data: EditTransactionSchema) {
     )
 
     console.log('Done')
+  })
+}
+
+export async function updateTransactions({
+  ids,
+  data,
+}: {
+  ids: string[]
+  data: UpdateTransactionSchema
+}) {
+  const user = await getUserOrRedirect()
+
+  if (!user) {
+    throw new Error('Unauthenticated')
+  }
+
+  return db.$transaction(async (prisma) => {
+    await Promise.all(
+      ids.map(async (transactionId) => {
+        // Retrieve the existing transaction to check if the budget has changed
+        const existingTransaction = await prisma.transaction.findUnique({
+          where: { id: transactionId },
+          include: { budget: true, tags: { include: { tag: true } } },
+        })
+
+        if (!existingTransaction) {
+          throw new Error('Transaction not found')
+        }
+
+        const oldBudgetId = existingTransaction.budgetId
+        const newBudgetId = data.budgetId
+        const budgetChanged = !newBudgetId || oldBudgetId !== newBudgetId
+
+        // Update the transaction details
+        const updatedTransaction = await prisma.transaction.update({
+          where: { id: transactionId },
+          data: {
+            ...omit(data, ['tags', 'reimbursements']),
+          },
+        })
+
+        // If the budget has changed, remove all TagOnTransaction records for the transaction
+        if (budgetChanged) {
+          await prisma.tagOnTransaction.deleteMany({
+            where: {
+              transactionId: transactionId,
+            },
+          })
+
+          const existingTags = existingTransaction.tags.map((t) => t.tag)
+
+          const tagsOnTransaction = await Promise.all(
+            existingTags.map(async (tag) => {
+              let tagId = tag.id
+
+              // Check if the tag with the same label exists for the new budget
+              const existingTag = await prisma.tag.findFirst({
+                where: {
+                  label: tag.label,
+                  budgetId: newBudgetId,
+                },
+              })
+
+              if (existingTag) {
+                tagId = existingTag.id
+              } else {
+                // Create a new tag for the new budget
+                const newTag = await prisma.tag.create({
+                  data: {
+                    label: tag.label,
+                    budgetId: newBudgetId,
+                  },
+                })
+                tagId = newTag.id
+              }
+
+              // Create or update the tag on the transaction
+              return prisma.tagOnTransaction.upsert({
+                where: {
+                  transactionId_tagId: {
+                    transactionId: transactionId,
+                    tagId: tagId,
+                  },
+                },
+                update: {},
+                create: {
+                  transactionId: transactionId,
+                  tagId: tagId,
+                },
+              })
+            }),
+          )
+        }
+      }),
+    )
   })
 }
 
