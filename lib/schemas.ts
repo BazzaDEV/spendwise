@@ -61,3 +61,7 @@ export const editTransactionSchema = z.object({
 })
 
 export type EditTransactionSchema = z.infer<typeof editTransactionSchema>
+
+export const updateTransactionSchema = editTransactionSchema.partial()
+
+export type UpdateTransactionSchema = z.infer<typeof updateTransactionSchema>

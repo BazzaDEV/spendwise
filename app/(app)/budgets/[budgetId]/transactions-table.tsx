@@ -1,7 +1,12 @@
 'use client'
 
 import { Tag, Transaction } from '@prisma/client'
-import { ColumnDef } from '@tanstack/react-table'
+import {
+  ColumnDef,
+  getCoreRowModel,
+  getFilteredRowModel,
+  useReactTable,
+} from '@tanstack/react-table'
 import { MoreHorizontal, Pencil, Trash } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -18,8 +23,12 @@ import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { DataTable } from '@/components/ui/data-table'
+import { TransactionsTableFloatingBar } from './transactions-table-floating-bar'
+import { useState } from 'react'
 
-type TransactionDetails = Transaction & { tags: Pick<Tag, 'id' | 'label'>[] }
+export type TransactionDetails = Transaction & {
+  tags: Pick<Tag, 'id' | 'label'>[]
+}
 
 export const columns: ColumnDef<TransactionDetails>[] = [
   {
@@ -132,17 +141,29 @@ export const columns: ColumnDef<TransactionDetails>[] = [
   },
 ]
 
-interface TransactionTableProps<TData> {
-  data: TData[]
+interface TransactionTableProps {
+  data: TransactionDetails[]
 }
 
-export function TransactionsTable<TData, TValue>({
-  data,
-}: TransactionTableProps<TData>) {
+export function TransactionsTable({ data }: TransactionTableProps) {
+  const [rowSelection, setRowSelection] = useState({})
+
+  const table = useReactTable({
+    data,
+    columns: columns,
+    getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onRowSelectionChange: setRowSelection,
+    columnResizeMode: 'onChange',
+    state: {
+      rowSelection,
+    },
+  })
+
   return (
-    <DataTable
-      columns={columns as ColumnDef<TData, TValue>[]}
-      data={data}
-    />
+    <>
+      <DataTable table={table} />
+      <TransactionsTableFloatingBar table={table} />
+    </>
   )
 }

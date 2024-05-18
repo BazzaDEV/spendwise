@@ -1,10 +1,6 @@
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
+'use client'
+
+import { Table as TanstackTable, flexRender } from '@tanstack/react-table'
 import {
   Table,
   TableBody,
@@ -13,31 +9,12 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { useState } from 'react'
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
-  data: TData[]
+interface DataTableProps<TData> {
+  table: TanstackTable<TData>
 }
 
-export function DataTable<TData, TValue>({
-  columns,
-  data,
-}: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = useState({})
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onRowSelectionChange: setRowSelection,
-    columnResizeMode: 'onChange',
-    state: {
-      rowSelection,
-    },
-  })
-
+export function DataTable<TData>({ table }: DataTableProps<TData>) {
   return (
     <div className="space-y-4">
       <div className="rounded-md border">
@@ -83,7 +60,7 @@ export function DataTable<TData, TValue>({
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={table.getAllColumns().length}
                   className="h-24 text-center"
                 >
                   No results.
