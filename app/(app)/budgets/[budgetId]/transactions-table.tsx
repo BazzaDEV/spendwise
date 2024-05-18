@@ -1,40 +1,23 @@
 'use client'
 
 import { Tag, Transaction } from '@prisma/client'
-import {
-  ColumnDef,
-  Table as TTable,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import { MoreHorizontal, Pencil, Trash, X } from 'lucide-react'
+import { ColumnDef } from '@tanstack/react-table'
+import { MoreHorizontal, Pencil, Trash } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
 import { format } from 'date-fns'
 import { deleteTransaction } from '@/api/transactions'
-import { useState } from 'react'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { Input } from '@/components/ui/input'
+import { DataTable } from '@/components/ui/data-table'
 
 type TransactionDetails = Transaction & { tags: Pick<Tag, 'id' | 'label'>[] }
 
@@ -149,112 +132,17 @@ export const columns: ColumnDef<TransactionDetails>[] = [
   },
 ]
 
-interface DataTableToolbarProps<TData> {
-  table: TTable<TData>
-}
-
-function TransactionTableToolbar<TData>({
-  table,
-}: DataTableToolbarProps<TData>) {
-  const isFiltered = table.getState().columnFilters.length > 0
-
-  return (
-    <div className="flex items-center justify-between">
-      <div className="flex flex-1 items-center space-x-2">
-        <Input
-          placeholder="Filter transactions..."
-          value={
-            (table.getColumn('description')?.getFilterValue() as string) ?? ''
-          }
-          onChange={(event) =>
-            table.getColumn('description')?.setFilterValue(event.target.value)
-          }
-          className="w-[200px] lg:w-[250px]"
-        />
-      </div>
-    </div>
-  )
-}
-
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
+interface TransactionTableProps<TData> {
   data: TData[]
 }
 
 export function TransactionsTable<TData, TValue>({
-  columns,
   data,
-}: DataTableProps<TData, TValue>) {
-  const [rowSelection, setRowSelection] = useState({})
-
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onRowSelectionChange: setRowSelection,
-    columnResizeMode: 'onChange',
-    state: {
-      rowSelection,
-    },
-  })
-
+}: TransactionTableProps<TData>) {
   return (
-    <div className="space-y-4">
-      <TransactionTableToolbar table={table} />
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow
-                className="items-center"
-                key={headerGroup.id}
-              >
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext(),
-                      )}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+    <DataTable
+      columns={columns as ColumnDef<TData, TValue>[]}
+      data={data}
+    />
   )
 }
