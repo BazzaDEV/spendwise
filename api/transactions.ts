@@ -9,7 +9,7 @@ import {
 } from '@/lib/schemas'
 import { Prisma, Transaction } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
-import { diff, fork, omit, unique } from 'radash'
+import { diff, omit, unique } from 'radash'
 
 export async function getTransactionsForBudget({
   budgetId,
@@ -19,9 +19,7 @@ export async function getTransactionsForBudget({
   const user = await getUserOrRedirect()
 
   if (!user) {
-    return {
-      error: 'Unauthenticated',
-    }
+    throw new Error('Unauthenticated')
   }
 
   const transactions = await db.transaction.findMany({

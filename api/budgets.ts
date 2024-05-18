@@ -289,9 +289,7 @@ export async function getBudget(data: Pick<Budget, 'id'>) {
   const user = await getUserOrRedirect()
 
   if (!user) {
-    return {
-      error: 'Unauthenticated',
-    }
+    throw new Error('Unauthenticated')
   }
 
   const budget = await db.budget.findFirst({
@@ -300,16 +298,10 @@ export async function getBudget(data: Pick<Budget, 'id'>) {
     },
   })
 
-  if (!budget) {
-    return {
-      error: 'Budget does not exist.',
-    }
-  }
-
-  if (budget.userId !== user.id) {
-    return {
-      error: 'This budget does not belong to you.',
-    }
+  if (!budget || user.id !== budget.userId) {
+    throw new Error(
+      'Budget does not exist or you do not have permission to access it.',
+    )
   }
 
   return budget
