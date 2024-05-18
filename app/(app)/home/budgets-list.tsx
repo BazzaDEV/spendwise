@@ -23,8 +23,12 @@ export const BudgetsList = () => {
     return <div>Error: {error.message}</div>
   }
 
+  if (data.length === 0) {
+    return <div>{"You don't have any budgets."}</div>
+  }
+
   return (
-    <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
       {data.map((budget) => (
         <BudgetCard
           key={budget.id}
@@ -58,7 +62,7 @@ const BudgetCard = ({
 
   return (
     <Link href={`/budgets/${budget.id}`}>
-      <Card className="max-w-[450px] transition-all duration-300 ease-in-out hover:cursor-pointer hover:border-muted-foreground hover:shadow-lg">
+      <Card className="transition-all ease-in-out hover:cursor-pointer hover:border-muted-foreground hover:shadow-md">
         <CardHeader>
           <CardTitle>{budget.name}</CardTitle>
         </CardHeader>
