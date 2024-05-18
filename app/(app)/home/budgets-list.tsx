@@ -1,18 +1,24 @@
 'use client'
 
-import { Budget } from '@prisma/client'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { useQuery } from '@tanstack/react-query'
-import { getBudgetDetails, getBudgets } from '@/api/budgets'
+import { getBudgetsWithStatistics } from '@/api/budgets'
 import { formatValue } from 'react-currency-input-field'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 
+type ElementType<T> = T extends (infer U)[] ? U : never
+
+type AllBudgetStatisticsAPIResponse = Awaited<
+  ReturnType<typeof getBudgetsWithStatistics>
+>
+type BudgetStatistics = ElementType<AllBudgetStatisticsAPIResponse>
+
 export const BudgetsList = () => {
   const { data, error, status } = useQuery({
-    queryKey: ['budgets'],
-    queryFn: () => getBudgets(),
+    queryKey: ['budget-statistics'],
+    queryFn: () => getBudgetsWithStatistics(),
   })
 
   if (status === 'pending') {
@@ -39,25 +45,8 @@ export const BudgetsList = () => {
   )
 }
 
-const BudgetCard = ({
-  budget,
-}: {
-  budget: Omit<Budget, 'reserve'> & { reserve: number }
-}) => {
-  const { status, data, error } = useQuery({
-    queryKey: ['budgets', budget.id],
-    queryFn: () => getBudgetDetails(budget),
-  })
-
-  if (status === 'pending') {
-    return <span>Loading...</span>
-  }
-
-  if (status === 'error') {
-    return <span>Error: {error.message}</span>
-  }
-
-  const { statistics } = data
+const BudgetCard = ({ budget }: { budget: BudgetStatistics }) => {
+  const { statistics } = budget
   const { mtdLimit, mtdGross, mtdActual, mtdProgress } = statistics!
 
   return (
