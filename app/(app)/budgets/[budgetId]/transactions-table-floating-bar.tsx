@@ -15,10 +15,16 @@ import {
   TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { Table } from '@tanstack/react-table'
-import { RotateCwIcon, WalletMinimalIcon, X, XIcon } from 'lucide-react'
+import {
+  RotateCwIcon,
+  Trash2Icon,
+  WalletMinimalIcon,
+  X,
+  XIcon,
+} from 'lucide-react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { getBudgets } from '@/api/budgets'
-import { updateTransactions } from '@/api/transactions'
+import { deleteTransactions, updateTransactions } from '@/api/transactions'
 import { TransactionDetails } from './transactions-table'
 import { toast } from 'sonner'
 
@@ -37,13 +43,23 @@ export function TransactionsTableFloatingBar({
     select: (data) => data.map(({ id, name }) => ({ id, name })),
   })
 
-  const { mutateAsync, isPending } = useMutation({
+  const updateMutation = useMutation({
     mutationFn: updateTransactions,
     onSuccess: () => {
       toast.success('Transactions have been updated.')
     },
     onError: () => {
       toast.error("Couldn't update transactions.")
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => deleteTransactions({ ids: selectedIds }),
+    onSuccess: () => {
+      toast.success('Transactions have been deleted.')
+    },
+    onError: () => {
+      toast.error("Couldn't delete transactions.")
     },
   })
 
@@ -70,46 +86,65 @@ export function TransactionsTableFloatingBar({
             orientation="vertical"
             className="h-6"
           />
-          <Select
-            disabled={isPending}
-            onValueChange={(value) =>
-              mutateAsync({
-                ids: selectedIds,
-                data: { budgetId: Number(value) },
-              })
-            }
-          >
-            <Tooltip delayDuration={250}>
-              <SelectTrigger asChild>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="secondary"
-                    className="h-fit w-fit border px-2"
-                  >
-                    {isPending ? (
-                      <RotateCwIcon className="size-4 animate-spin" />
-                    ) : (
-                      <WalletMinimalIcon className="size-4" />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-              </SelectTrigger>
-              <TooltipContent>Update budget</TooltipContent>
-            </Tooltip>
-            <SelectContent
-              align="center"
-              side="top"
+          <div className="flex gap-1">
+            <Select
+              disabled={updateMutation.isPending}
+              onValueChange={(value) =>
+                updateMutation.mutateAsync({
+                  ids: selectedIds,
+                  data: { budgetId: Number(value) },
+                })
+              }
             >
-              {budgets.data?.map((budget) => (
-                <SelectItem
-                  key={budget.id}
-                  value={String(budget.id)}
+              <Tooltip delayDuration={250}>
+                <SelectTrigger asChild>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="secondary"
+                      className="h-fit w-fit border px-2"
+                    >
+                      {updateMutation.isPending ? (
+                        <RotateCwIcon className="size-4 animate-spin" />
+                      ) : (
+                        <WalletMinimalIcon className="size-4" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                </SelectTrigger>
+                <TooltipContent>Update budget</TooltipContent>
+              </Tooltip>
+              <SelectContent
+                align="center"
+                side="top"
+              >
+                {budgets.data?.map((budget) => (
+                  <SelectItem
+                    key={budget.id}
+                    value={String(budget.id)}
+                  >
+                    {budget.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Tooltip delayDuration={250}>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="destructive"
+                  className="h-fit w-fit border px-2"
+                  disabled={deleteMutation.isPending}
+                  onClick={() => deleteMutation.mutateAsync()}
                 >
-                  {budget.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+                  {deleteMutation.isPending ? (
+                    <RotateCwIcon className="size-4 animate-spin" />
+                  ) : (
+                    <Trash2Icon className="size-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Delete</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
       </div>
     </div>

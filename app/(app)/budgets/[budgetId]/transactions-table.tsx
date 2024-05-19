@@ -18,13 +18,15 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { Checkbox } from '@/components/ui/checkbox'
 import { format } from 'date-fns'
-import { deleteTransaction } from '@/api/transactions'
+import { deleteTransaction, getTransactionsForBudget } from '@/api/transactions'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { DataTable } from '@/components/ui/data-table'
 import { TransactionsTableFloatingBar } from './transactions-table-floating-bar'
 import { useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { useParams } from 'next/navigation'
 
 export type TransactionDetails = Transaction & {
   tags: Pick<Tag, 'id' | 'label'>[]
@@ -141,15 +143,19 @@ export const columns: ColumnDef<TransactionDetails>[] = [
   },
 ]
 
-interface TransactionTableProps {
-  data: TransactionDetails[]
-}
+export function TransactionsTable() {
+  const params = useParams<{ budgetId: string }>()
 
-export function TransactionsTable({ data }: TransactionTableProps) {
+  const { data, error, isPending, isError } = useQuery({
+    queryKey: ['budget-transactions', params.budgetId],
+    queryFn: () =>
+      getTransactionsForBudget({ budgetId: Number(params.budgetId) }),
+  })
+
   const [rowSelection, setRowSelection] = useState({})
 
   const table = useReactTable({
-    data,
+    data: data ?? [],
     columns: columns,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
