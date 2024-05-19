@@ -3,8 +3,10 @@
 import { Tag, Transaction } from '@prisma/client'
 import {
   ColumnDef,
+  SortingState,
   getCoreRowModel,
   getFilteredRowModel,
+  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
 import { MoreHorizontal, Pencil, Trash } from 'lucide-react'
@@ -22,7 +24,7 @@ import { deleteTransaction, getTransactionsForBudget } from '@/api/transactions'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
-import { DataTable } from '@/components/ui/data-table'
+import { DataTable, DataTableColumnHeader } from '@/components/ui/data-table'
 import { TransactionsTableFloatingBar } from './transactions-table-floating-bar'
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
@@ -59,11 +61,17 @@ export const columns: ColumnDef<TransactionDetails>[] = [
   },
   {
     accessorKey: 'date',
-    header: 'Date',
+    enableSorting: true,
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title="Date"
+      />
+    ),
     cell: ({ row }) => {
       const date = row.getValue<Date>('date')
 
-      return format(new Date(date), 'yyyy/MM/dd')
+      return format(date, 'MMM dd, yyyy')
     },
   },
   {
@@ -153,6 +161,9 @@ export function TransactionsTable() {
   })
 
   const [rowSelection, setRowSelection] = useState({})
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'date', desc: true },
+  ])
 
   const table = useReactTable({
     data: data ?? [],
@@ -160,9 +171,12 @@ export function TransactionsTable() {
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
     columnResizeMode: 'onChange',
     state: {
       rowSelection,
+      sorting,
     },
   })
 
