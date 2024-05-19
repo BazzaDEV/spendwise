@@ -68,12 +68,16 @@ const BudgetCard = ({ budget }: { budget: BudgetStatistics }) => {
           <Progress
             value={mtdProgress}
             className={cn({
+              '*:bg-gradient-to-r *:from-green-600 *:to-green-500':
+                mtdProgress < 25,
               '*:bg-gradient-to-r *:from-blue-600 *:to-blue-500':
-                mtdProgress < 50,
+                mtdProgress >= 25 && mtdProgress < 50,
               '*:bg-gradient-to-r *:from-yellow-600 *:to-yellow-500':
-                mtdProgress < 75 && mtdProgress >= 50,
+                mtdProgress >= 50 && mtdProgress < 75,
+              '*:bg-gradient-to-r *:from-orange-600 *:to-orange-500':
+                mtdProgress >= 75 && mtdProgress < 100,
               '*:bg-gradient-to-r *:from-red-600 *:to-red-500':
-                mtdProgress >= 75,
+                mtdProgress >= 100,
             })}
           />
           <div className="mt-2 flex justify-between text-sm">
