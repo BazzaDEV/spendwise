@@ -161,7 +161,9 @@ export function TransactionsTable() {
   })
 
   const [rowSelection, setRowSelection] = useState({})
-  const [sorting, setSorting] = useState<SortingState>([])
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: 'date', desc: true },
+  ])
 
   const table = useReactTable({
     data: data ?? [],
