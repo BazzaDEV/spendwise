@@ -28,7 +28,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useQuery } from '@tanstack/react-query'
-import { formatValue } from 'react-currency-input-field'
 
 export default function NewBudgetForm() {
   const [loading, setLoading] = useState<boolean>(false)
@@ -49,8 +48,6 @@ export default function NewBudgetForm() {
       },
     },
   })
-
-  console.log(JSON.stringify(form.formState.errors, null, '\t'))
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof newBudgetSchema>) {
