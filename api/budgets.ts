@@ -249,9 +249,7 @@ export async function createBudget(data: NewBudgetSchema) {
   const user = await getUserOrRedirect()
 
   if (!user) {
-    return {
-      error: 'Unauthenticated',
-    }
+    throw new Error('Unauthenticated')
   }
 
   const existingBudget = await db.budget.findFirst({
@@ -262,9 +260,7 @@ export async function createBudget(data: NewBudgetSchema) {
   })
 
   if (existingBudget) {
-    return {
-      error: 'A budget with this name already exists.',
-    }
+    throw new Error('You already have a budget with this name.')
   }
 
   const newBudget = await db.budget.create({
