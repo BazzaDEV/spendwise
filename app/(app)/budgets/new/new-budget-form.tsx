@@ -27,15 +27,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 export default function NewBudgetForm() {
-  const [loading, setLoading] = useState<boolean>(false)
   const router = useRouter()
 
   const timePeriods = useQuery({
     queryKey: ['time-periods'],
     queryFn: () => getTimePeriods(),
+  })
+
+  const { mutateAsync, isPending } = useMutation({
+    mutationFn: createBudget,
+    onSuccess: (data) => {
+      toast.success('Budget was created.')
+      router.push(`/budgets/${data.id}`)
+    },
+    onError: (error) => {
+      toast.error("Couldn't create budget.", {
+        description: error.message,
+      })
+    },
   })
 
   // 1. Define your form.
@@ -51,19 +63,7 @@ export default function NewBudgetForm() {
 
   // 2. Define a submit handler.
   async function onSubmit(values: z.infer<typeof newBudgetSchema>) {
-    setLoading(true)
-    const budget = await createBudget(values)
-    setLoading(false)
-
-    if ('error' in budget) {
-      return toast.error(`Couldn't create a new budget`, {
-        description: budget.error,
-      })
-    }
-
-    toast.success(`${budget.name} budget was created.`)
-
-    return router.push(`/budgets/${budget.id}`)
+    await mutateAsync(values)
   }
 
   return (
@@ -80,7 +80,7 @@ export default function NewBudgetForm() {
               <FormLabel>Budget Name</FormLabel>
               <FormControl>
                 <Input
-                  disabled={loading}
+                  disabled={isPending}
                   placeholder="Personal"
                   {...field}
                 />
@@ -105,6 +105,7 @@ export default function NewBudgetForm() {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={String(field.value)}
+                  disabled={isPending}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -127,53 +128,6 @@ export default function NewBudgetForm() {
               </FormItem>
             )}
           />
-          {/* <FormField */}
-          {/*   control={form.control} */}
-          {/*   name="budgetLimit.startDate" */}
-          {/*   render={({ field }) => ( */}
-          {/*     <FormItem className="flex flex-col"> */}
-          {/*       <FormLabel>Start Date</FormLabel> */}
-          {/*       <Popover> */}
-          {/*         <PopoverTrigger asChild> */}
-          {/*           <FormControl> */}
-          {/*             <Button */}
-          {/*               variant={'outline'} */}
-          {/*               className={cn( */}
-          {/*                 'pl-3 text-left font-normal', */}
-          {/*                 !field.value && 'text-muted-foreground', */}
-          {/*               )} */}
-          {/*             > */}
-          {/*               {field.value ? ( */}
-          {/*                 format(field.value, 'MMMM yyyy') */}
-          {/*               ) : ( */}
-          {/*                 <span>Pick a date</span> */}
-          {/*               )} */}
-          {/*               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" /> */}
-          {/*             </Button> */}
-          {/*           </FormControl> */}
-          {/*         </PopoverTrigger> */}
-          {/*         <PopoverContent */}
-          {/*           className="w-auto p-0" */}
-          {/*           align="start" */}
-          {/*         > */}
-          {/*           <Calendar */}
-          {/*             mode="single" */}
-          {/*             selected={field.value} */}
-          {/*             onSelect={field.onChange} */}
-          {/*             disabled={(date) => */}
-          {/*               date > new Date() || date < new Date('1900-01-01') */}
-          {/*             } */}
-          {/*             initialFocus */}
-          {/*           /> */}
-          {/*         </PopoverContent> */}
-          {/*       </Popover> */}
-          {/*       <FormDescription> */}
-          {/*         The budget limit will apply starting on this date. */}
-          {/*       </FormDescription> */}
-          {/*       <FormMessage /> */}
-          {/*     </FormItem> */}
-          {/*   )} */}
-          {/* /> */}
           <FormField
             control={form.control}
             name="budgetLimit.amount"
@@ -182,7 +136,7 @@ export default function NewBudgetForm() {
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
                   <CurrencyInput
-                    disabled={loading}
+                    disabled={isPending}
                     placeholder="$500.00"
                     value={field.value}
                     onValueChange={(value) =>
@@ -200,7 +154,7 @@ export default function NewBudgetForm() {
         </div>
         <Button
           type="submit"
-          disabled={loading}
+          disabled={isPending}
         >
           Submit
         </Button>
