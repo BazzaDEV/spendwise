@@ -31,6 +31,7 @@ import { CurrencyInput } from '@/components/ui/currency-input'
 import { Label } from '@/components/ui/label'
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
+import { toast } from 'sonner'
 
 interface Props {
   tags: Pick<Tag, 'id' | 'label'>[]
@@ -68,6 +69,8 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
       ...values,
       reimbursements: isShared ? values.reimbursements : [],
     })
+
+    toast.success('Transaction created')
   }
 
   function splitEvenly() {

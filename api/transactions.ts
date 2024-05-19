@@ -119,7 +119,7 @@ export async function updateTransaction(data: EditTransactionSchema) {
     throw new Error('Unauthenticated')
   }
 
-  return db.$transaction(async (prisma) => {
+  await db.$transaction(async (prisma) => {
     const transactionId = data.id
 
     // Retrieve the existing transaction to check if the budget has changed
@@ -222,9 +222,10 @@ export async function updateTransaction(data: EditTransactionSchema) {
         })
       }),
     )
-
-    console.log('Done')
   })
+
+  revalidatePath(`/budgets/${data.budgetId}`)
+  revalidatePath(`/transactions/${data.id}`)
 }
 
 export async function updateTransactions({
@@ -255,10 +256,10 @@ export async function updateTransactions({
 
         const oldBudgetId = existingTransaction.budgetId
         const newBudgetId = data.budgetId
-        const budgetChanged = !newBudgetId || oldBudgetId !== newBudgetId
+        const budgetChanged = newBudgetId || oldBudgetId !== newBudgetId
 
         // Update the transaction details
-        const updatedTransaction = await prisma.transaction.update({
+        await prisma.transaction.update({
           where: { id: transactionId },
           data: {
             ...omit(data, ['tags', 'reimbursements']),
@@ -275,7 +276,7 @@ export async function updateTransactions({
 
           const existingTags = existingTransaction.tags.map((t) => t.tag)
 
-          const tagsOnTransaction = await Promise.all(
+          await Promise.all(
             existingTags.map(async (tag) => {
               let tagId = tag.id
 
@@ -317,8 +318,13 @@ export async function updateTransactions({
             }),
           )
         }
+
+        revalidatePath(`/budgets/${oldBudgetId}`)
+        revalidatePath(`/budgets/${newBudgetId}`)
       }),
     )
+
+    ids.forEach((id) => revalidatePath(`/transactions/${id}`))
   })
 }
 
@@ -381,4 +387,35 @@ export async function deleteTransaction({
   revalidatePath(`/transactions/${deletedTransaction.id}`)
 
   return deletedTransaction
+}
+
+export async function deleteTransactions({ ids }: { ids: string[] }) {
+  const user = await getUserOrRedirect()
+
+  if (!user) {
+    throw new Error('Unauthenticated')
+  }
+
+  const affectedBudgets = unique(
+    await db.transaction.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
+      select: {
+        budgetId: true,
+      },
+    }),
+  )
+
+  await db.transaction.deleteMany({
+    where: {
+      id: {
+        in: ids,
+      },
+    },
+  })
+
+  affectedBudgets.forEach((id) => revalidatePath(`/budgets/${id}`))
 }
