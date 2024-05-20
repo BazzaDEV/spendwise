@@ -1,27 +1,13 @@
-export const dynamic = 'force-dynamic'
-
-import { getBudgets, getBudgetsWithStatistics } from '@/api/budgets'
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { BudgetsList } from './budgets-list'
-import {
-  HydrationBoundary,
-  QueryClient,
-  dehydrate,
-} from '@tanstack/react-query'
+import { Suspense } from 'react'
+import { Budgets, BudgetsSkeleton } from './budgets'
 
 export default async function Page() {
   async function handleNewBudget() {
     'use server'
     return redirect('/budgets/new')
   }
-
-  const queryClient = new QueryClient()
-
-  await queryClient.prefetchQuery({
-    queryKey: ['budget-statistics'],
-    queryFn: () => getBudgetsWithStatistics(),
-  })
 
   return (
     <div className="flex flex-col gap-8">
@@ -31,9 +17,9 @@ export default async function Page() {
           <Button>New Budget</Button>
         </form>
       </div>
-      <HydrationBoundary state={dehydrate(queryClient)}>
-        <BudgetsList />
-      </HydrationBoundary>
+      <Suspense fallback={<BudgetsSkeleton />}>
+        <Budgets />
+      </Suspense>
     </div>
   )
 }
