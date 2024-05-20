@@ -1,14 +1,13 @@
 import { redirect } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Suspense } from 'react'
-import { Budgets, BudgetsSkeleton } from './budgets'
+import { Budgets, BudgetsSkeleton } from './_components/budgets'
 
-export default async function Page() {
+export default function Page() {
   async function handleNewBudget() {
     'use server'
     return redirect('/budgets/new')
   }
-
   return (
     <div className="flex flex-col gap-8">
       <div className="flex w-full justify-between">

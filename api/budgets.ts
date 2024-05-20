@@ -276,7 +276,7 @@ export async function createBudget(data: NewBudgetSchema) {
     },
   })
 
-  revalidatePath(`/home`)
+  revalidatePath(`/dashboard`)
 
   return newBudget
 }

@@ -6,10 +6,10 @@ import {
   QueryClient,
   dehydrate,
 } from '@tanstack/react-query'
-import { BudgetsList } from './budgets-list'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { BudgetsList } from './budgets-list'
 
 export async function Budgets() {
   const queryClient = new QueryClient()
