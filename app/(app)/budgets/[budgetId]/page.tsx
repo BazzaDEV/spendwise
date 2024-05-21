@@ -1,49 +1,26 @@
 export const dynamic = 'force-dynamic'
 
-import { getBudget } from '@/api/budgets'
-import { cn } from '@/lib/utils'
-import { CircleChevronRight } from 'lucide-react'
-import { TransactionsTable, columns } from './transactions-table'
-import { getTransactionsForBudget } from '@/api/transactions'
-import NewTransactionForm from './new-transaction-form'
-import { getTagsForBudget } from '@/api/tags'
-import {
-  HydrationBoundary,
-  QueryClient,
-  dehydrate,
-} from '@tanstack/react-query'
-import Budget from './budget'
+import { Header, HeaderSkeleton } from './header'
+import { Suspense } from 'react'
+import { Transactions, TransactionsSkeleton } from './transactions'
 
 interface PageProps {
   params: {
-    budgetId: string
+    budgetId: number | string
   }
 }
 
 export default async function Page({ params }: PageProps) {
-  const queryClient = new QueryClient()
-
-  const budget = queryClient.prefetchQuery({
-    queryKey: ['budgets', params.budgetId],
-    queryFn: () => getBudget({ id: Number(params.budgetId) }),
-  })
-
-  const transactions = queryClient.prefetchQuery({
-    queryKey: ['budget-transactions', params.budgetId],
-    queryFn: () =>
-      getTransactionsForBudget({ budgetId: Number(params.budgetId) }),
-  })
-
-  const tags = queryClient.prefetchQuery({
-    queryKey: ['budget-tags', params.budgetId],
-    queryFn: () => getTagsForBudget({ budgetId: Number(params.budgetId) }),
-  })
-
-  await Promise.all([budget, transactions, tags])
+  const budgetId = Number(params.budgetId)
 
   return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <Budget id={Number(params.budgetId)} />
-    </HydrationBoundary>
+    <div className="flex flex-col gap-8">
+      <Suspense fallback={<HeaderSkeleton />}>
+        <Header id={budgetId} />
+      </Suspense>
+      <Suspense fallback={<TransactionsSkeleton />}>
+        <Transactions budgetId={budgetId} />
+      </Suspense>
+    </div>
   )
 }

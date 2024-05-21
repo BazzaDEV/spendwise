@@ -19,9 +19,11 @@ export default async function Layout({
   return (
     <Providers>
       <TooltipProvider>
-        <div className="min-h-screen p-4">
+        <div className="flex min-h-screen flex-col p-4">
           <Navbar />
-          <div className="mx-auto max-w-screen-xl py-10">{children}</div>
+          <div className="mx-auto flex w-full max-w-screen-xl flex-1 flex-col py-10">
+            {children}
+          </div>
         </div>
         <Toaster richColors />
       </TooltipProvider>
