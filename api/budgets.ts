@@ -5,8 +5,9 @@ import db from '@/lib/db'
 import { NewBudgetSchema } from '@/lib/schemas'
 import { Budget } from '@prisma/client'
 import { revalidatePath } from 'next/cache'
+import { cache } from 'react'
 
-export async function getBudgets() {
+export const getBudgets = cache(async () => {
   const user = await getUserOrRedirect()
 
   if (!user) {
@@ -31,15 +32,15 @@ export async function getBudgets() {
     ...budget,
     reserve: budget.reserve.toNumber(),
   }))
-}
+})
 
-export async function getTimePeriods() {
+export const getTimePeriods = cache(async () => {
   const timePeriods = await db.timePeriod.findMany()
 
   return timePeriods
-}
+})
 
-export async function getBudgetsWithStatistics() {
+export const getBudgetsWithStatistics = cache(async () => {
   const user = await getUserOrRedirect()
 
   if (!user) {
@@ -136,9 +137,9 @@ export async function getBudgetsWithStatistics() {
       },
     }
   })
-}
+})
 
-export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
+export const getBudgetDetails = cache(async (data: Pick<Budget, 'id'>) => {
   const user = await getUserOrRedirect()
 
   if (!user) {
@@ -243,7 +244,7 @@ export async function getBudgetDetails(data: Pick<Budget, 'id'>) {
       mtdProgress,
     },
   }
-}
+})
 
 export async function createBudget(data: NewBudgetSchema) {
   const user = await getUserOrRedirect()
@@ -281,7 +282,7 @@ export async function createBudget(data: NewBudgetSchema) {
   return newBudget
 }
 
-export async function getBudget(data: Pick<Budget, 'id'>) {
+export const getBudget = cache(async (data: Pick<Budget, 'id'>) => {
   const user = await getUserOrRedirect()
 
   if (!user) {
@@ -301,4 +302,4 @@ export async function getBudget(data: Pick<Budget, 'id'>) {
   }
 
   return budget
-}
+})

@@ -64,6 +64,8 @@ export async function createTransaction(data: NewTransactionSchema) {
   const existingTagLabels = existingTags.map((t) => t.label)
   const newTagLabels = diff(tagLabels, existingTagLabels)
 
+  console.log(JSON.stringify({ ...data }, null, '\t'))
+
   const newTags = await db.tag.createManyAndReturn({
     data: newTagLabels.map((l) => ({ label: l, budgetId: data.budgetId })),
   })

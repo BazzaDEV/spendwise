@@ -32,17 +32,26 @@ import { Label } from '@/components/ui/label'
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
+import { useQueryClient } from '@tanstack/react-query'
+import { tagQueries } from '@/lib/queries'
 
 interface Props {
   tags: Pick<Tag, 'id' | 'label'>[]
   defaultValues?: {
     budgetId: number
   }
+  onSuccess?: () => void
 }
 
-export default function NewTransactionForm({ defaultValues, tags }: Props) {
+export default function NewTransactionForm({
+  defaultValues,
+  tags,
+  onSuccess = () => {},
+}: Props) {
   const [yourShare, setYourShare] = useState<number | string>(0)
   const [isShared, setIsShared] = useState<boolean>(false)
+
+  const queryClient = useQueryClient()
 
   const form = useForm<z.infer<typeof newTransactionSchema>>({
     resolver: zodResolver(newTransactionSchema),
@@ -70,7 +79,11 @@ export default function NewTransactionForm({ defaultValues, tags }: Props) {
       reimbursements: isShared ? values.reimbursements : [],
     })
 
-    toast.success('Transaction created')
+    toast.success('Transaction created.')
+
+    queryClient.invalidateQueries(tagQueries.forBudget(values.budgetId))
+
+    onSuccess()
   }
 
   function splitEvenly() {
