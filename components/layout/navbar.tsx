@@ -2,6 +2,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { getUser, logout } from '@/lib/auth/actions'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { PiggyBankIcon } from 'lucide-react'
 
 const pages = [
   {
@@ -28,9 +29,9 @@ export default async function Navbar() {
     <div className="flex items-center justify-between">
       <Link
         href="/dashboard"
-        className="mr-4"
+        className="mr-4 inline-flex items-center gap-1.5"
       >
-        Spendwise
+        <PiggyBankIcon className="size-6" /> spendwise
       </Link>
       <div className="flex items-center gap-2">
         {pages.map((page) => (
