@@ -1,6 +1,5 @@
 'use client'
 
-import { getBudgets } from '@/api/budgets'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -33,7 +32,6 @@ import { format } from 'date-fns'
 import { CalendarIcon, Trash } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { MultiSelect } from '@/components/ui/multi-select'
-import { getTagsForBudget } from '@/api/tags'
 import { CurrencyInput } from '@/components/ui/currency-input'
 import { useState } from 'react'
 import { Label } from '@/components/ui/label'
@@ -84,7 +82,7 @@ export default function EditTransactionForm({
   const reimbursements = form.watch('reimbursements')
   const budgetId = Number(form.watch('budgetId'))
 
-  const budgetsQuery = useQuery(budgetQueries.all())
+  const budgetsQuery = useQuery(budgetQueries.list())
   const budgets =
     !budgetsQuery.isError && !budgetsQuery.isPending ? budgetsQuery.data : []
 

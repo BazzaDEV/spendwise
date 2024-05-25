@@ -1,29 +1,22 @@
-'use client'
-
 import { getTransaction } from '@/api/transactions'
-import { useQuery } from '@tanstack/react-query'
 import EditTransactionForm from './edit-transaction-form'
+import { sleep } from '@/lib/utils'
 
 interface EditTransactionProps {
   id: string
 }
 
-export default function EditTransaction({ id }: EditTransactionProps) {
-  const { status, data, error } = useQuery({
-    queryKey: ['transactions', id],
-    queryFn: () => getTransaction({ id }),
-  })
+export default async function EditTransaction({ id }: EditTransactionProps) {
+  const data = await getTransaction({ id })
 
-  if (status === 'pending') {
-    return <div>Loading...</div>
-  } else if (status === 'error') {
-    return <div>Error: {error.message}</div>
-  } else {
-    return (
-      <div>
-        {/* <pre>{JSON.stringify(data, null, '\t')}</pre> */}
-        <EditTransactionForm data={data} />
-      </div>
-    )
-  }
+  // @ts-ignore
+  return (
+    <div className="flex flex-col gap-8">
+      <h1 className="text-4xl font-semibold tracking-tighter">
+        Edit Transaction
+      </h1>
+      {/* @ts-ignore */}
+      <EditTransactionForm data={data} />
+    </div>
+  )
 }
