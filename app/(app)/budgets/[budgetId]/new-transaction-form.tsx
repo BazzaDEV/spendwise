@@ -80,7 +80,7 @@ export default function NewTransactionForm({
   const reimbursements = form.watch('reimbursements')
   const budgetId = Number(form.watch('budgetId'))
 
-  const budgetsQuery = useQuery(budgetQueries.all())
+  const budgetsQuery = useQuery(budgetQueries.list())
   const budgets =
     !budgetsQuery.isError && !budgetsQuery.isPending ? budgetsQuery.data : []
 
