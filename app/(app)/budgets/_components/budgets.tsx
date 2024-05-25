@@ -1,29 +1,15 @@
 export const dynamic = 'force-dynamic'
 
 import { getBudgetsWithStatistics } from '@/api/budgets'
-import {
-  HydrationBoundary,
-  QueryClient,
-  dehydrate,
-} from '@tanstack/react-query'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { BudgetsList } from './budgets-list'
 
 export async function Budgets() {
-  const queryClient = new QueryClient()
+  const data = await getBudgetsWithStatistics()
 
-  await queryClient.prefetchQuery({
-    queryKey: ['budget-statistics'],
-    queryFn: () => getBudgetsWithStatistics(),
-  })
-
-  return (
-    <HydrationBoundary state={dehydrate(queryClient)}>
-      <BudgetsList />
-    </HydrationBoundary>
-  )
+  return <BudgetsList data={data} />
 }
 
 export function BudgetsSkeleton() {
