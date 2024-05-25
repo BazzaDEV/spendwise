@@ -42,6 +42,7 @@ import Link from 'next/link'
 import { updateTransaction } from '@/api/transactions'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { budgetQueries, tagQueries } from '@/lib/queries'
 
 interface EditTransactionFormProps {
   data: EditTransactionSchema
@@ -83,18 +84,12 @@ export default function EditTransactionForm({
   const reimbursements = form.watch('reimbursements')
   const budgetId = Number(form.watch('budgetId'))
 
-  const budgets = useQuery({
-    queryKey: ['budgets'],
-    queryFn: () => getBudgets(),
-  })
+  const budgetsQuery = useQuery(budgetQueries.all())
+  const budgets =
+    !budgetsQuery.isError && !budgetsQuery.isPending ? budgetsQuery.data : []
 
-  const tagsQuery = useQuery({
-    queryKey: ['budget-tags', budgetId],
-    queryFn: () => getTagsForBudget({ budgetId }),
-  })
-
-  const tags =
-    (!tagsQuery.isError && !tagsQuery.isPending && tagsQuery.data) || []
+  const tagsQuery = useQuery(tagQueries.forBudget(budgetId))
+  const tags = !tagsQuery.isError && !tagsQuery.isPending ? tagsQuery.data : []
 
   function splitEvenly() {
     const splitAmount = Number(transactionAmount) / (reimbursements.length + 1)
@@ -140,16 +135,14 @@ export default function EditTransactionForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {!budgets.isPending &&
-                      !budgets.isError &&
-                      budgets.data.map((budget) => (
-                        <SelectItem
-                          key={budget.id}
-                          value={String(budget.id)}
-                        >
-                          {budget.name}
-                        </SelectItem>
-                      ))}
+                    {budgets.map((budget) => (
+                      <SelectItem
+                        key={budget.id}
+                        value={String(budget.id)}
+                      >
+                        {budget.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormDescription></FormDescription>
