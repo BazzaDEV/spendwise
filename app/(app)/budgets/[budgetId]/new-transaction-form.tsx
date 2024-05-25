@@ -54,6 +54,8 @@ export default function NewTransactionForm({
   defaultValues,
   onSuccess = () => {},
 }: Props) {
+  const queryClient = useQueryClient()
+
   const [yourShare, setYourShare] = useState<number | string>(0)
   const [isShared, setIsShared] = useState<boolean>(false)
 
@@ -77,8 +79,6 @@ export default function NewTransactionForm({
   const transactionAmount = form.watch('amount')
   const reimbursements = form.watch('reimbursements')
   const budgetId = Number(form.watch('budgetId'))
-
-  const queryClient = useQueryClient()
 
   const budgetsQuery = useQuery(budgetQueries.all())
   const budgets =
