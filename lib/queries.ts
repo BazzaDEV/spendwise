@@ -1,3 +1,4 @@
+import { getBudgets } from '@/api/budgets'
 import { getTagsForBudget } from '@/api/tags'
 import { queryOptions } from '@tanstack/react-query'
 
@@ -7,5 +8,13 @@ export const tagQueries = {
     queryOptions({
       queryKey: [...tagQueries.all(), 'budget', id],
       queryFn: () => getTagsForBudget({ budgetId: id }),
+    }),
+}
+
+export const budgetQueries = {
+  all: () =>
+    queryOptions({
+      queryKey: ['budgets'],
+      queryFn: () => getBudgets(),
     }),
 }
