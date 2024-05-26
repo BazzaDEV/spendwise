@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { useQuery } from '@tanstack/react-query'
 import { getBudgetsWithStatistics } from '@/api/budgets'
 import { formatValue } from 'react-currency-input-field'
 import Link from 'next/link'
@@ -15,20 +14,7 @@ type AllBudgetStatisticsAPIResponse = Awaited<
 >
 type BudgetStatistics = ElementType<AllBudgetStatisticsAPIResponse>
 
-export const BudgetsList = () => {
-  const { data, error, status } = useQuery({
-    queryKey: ['budget-statistics'],
-    queryFn: () => getBudgetsWithStatistics(),
-  })
-
-  if (status === 'pending') {
-    return <div>Loading...</div>
-  }
-
-  if (status === 'error') {
-    return <div>Error: {error.message}</div>
-  }
-
+export const BudgetsList = ({ data }: { data: BudgetStatistics[] }) => {
   if (data.length === 0) {
     return <div>{"You don't have any budgets."}</div>
   }

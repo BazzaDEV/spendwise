@@ -1,6 +1,5 @@
 'use client'
 
-import { getBudgets } from '@/api/budgets'
 import { Button } from '@/components/ui/button'
 import {
   Form,
@@ -33,7 +32,6 @@ import { format } from 'date-fns'
 import { CalendarIcon, Trash } from 'lucide-react'
 import { Calendar } from '@/components/ui/calendar'
 import { MultiSelect } from '@/components/ui/multi-select'
-import { getTagsForBudget } from '@/api/tags'
 import { CurrencyInput } from '@/components/ui/currency-input'
 import { useState } from 'react'
 import { Label } from '@/components/ui/label'
@@ -42,6 +40,7 @@ import Link from 'next/link'
 import { updateTransaction } from '@/api/transactions'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
+import { budgetQueries, tagQueries } from '@/lib/queries'
 
 interface EditTransactionFormProps {
   data: EditTransactionSchema
@@ -83,18 +82,12 @@ export default function EditTransactionForm({
   const reimbursements = form.watch('reimbursements')
   const budgetId = Number(form.watch('budgetId'))
 
-  const budgets = useQuery({
-    queryKey: ['budgets'],
-    queryFn: () => getBudgets(),
-  })
+  const budgetsQuery = useQuery(budgetQueries.list())
+  const budgets =
+    !budgetsQuery.isError && !budgetsQuery.isPending ? budgetsQuery.data : []
 
-  const tagsQuery = useQuery({
-    queryKey: ['budget-tags', budgetId],
-    queryFn: () => getTagsForBudget({ budgetId }),
-  })
-
-  const tags =
-    (!tagsQuery.isError && !tagsQuery.isPending && tagsQuery.data) || []
+  const tagsQuery = useQuery(tagQueries.forBudget(budgetId))
+  const tags = !tagsQuery.isError && !tagsQuery.isPending ? tagsQuery.data : []
 
   function splitEvenly() {
     const splitAmount = Number(transactionAmount) / (reimbursements.length + 1)
@@ -140,16 +133,14 @@ export default function EditTransactionForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {!budgets.isPending &&
-                      !budgets.isError &&
-                      budgets.data.map((budget) => (
-                        <SelectItem
-                          key={budget.id}
-                          value={String(budget.id)}
-                        >
-                          {budget.name}
-                        </SelectItem>
-                      ))}
+                    {budgets.map((budget) => (
+                      <SelectItem
+                        key={budget.id}
+                        value={String(budget.id)}
+                      >
+                        {budget.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormDescription></FormDescription>

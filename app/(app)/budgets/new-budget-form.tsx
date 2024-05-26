@@ -15,9 +15,7 @@ import {
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { newBudgetSchema } from '@/lib/schemas'
-import { createBudget, getTimePeriods } from '@/api/budgets'
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { createBudget } from '@/api/budgets'
 import { toast } from 'sonner'
 import { CurrencyInput } from '@/components/ui/currency-input'
 import {
@@ -28,20 +26,20 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import { periodQueries } from '@/lib/queries'
 
-export default function NewBudgetForm() {
-  const router = useRouter()
+interface NewBudgetFormProps {
+  closeDialog: () => void
+}
 
-  const timePeriods = useQuery({
-    queryKey: ['time-periods'],
-    queryFn: () => getTimePeriods(),
-  })
+export default function NewBudgetForm(props: NewBudgetFormProps) {
+  const timePeriods = useQuery(periodQueries.list())
 
   const { mutateAsync, isPending } = useMutation({
     mutationFn: createBudget,
     onSuccess: (data) => {
       toast.success('Budget was created.')
-      router.push(`/budgets/${data.id}`)
+      props.closeDialog()
     },
     onError: (error) => {
       toast.error("Couldn't create budget.", {
@@ -152,12 +150,23 @@ export default function NewBudgetForm() {
             )}
           />
         </div>
-        <Button
-          type="submit"
-          disabled={isPending}
-        >
-          Submit
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            type="submit"
+            disabled={isPending}
+            className="w-full"
+          >
+            Submit
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onClick={props.closeDialog}
+          >
+            Cancel
+          </Button>
+        </div>
       </form>
     </Form>
   )

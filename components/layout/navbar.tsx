@@ -27,12 +27,17 @@ const pages = [
 export default async function Navbar() {
   return (
     <div className="flex items-center justify-between">
-      <Link
-        href="/dashboard"
-        className="mr-4 inline-flex items-center gap-1.5"
+      <Button
+        variant="ghost"
+        asChild
       >
-        <PiggyBankIcon className="size-6" /> spendwise
-      </Link>
+        <Link
+          href="/dashboard"
+          className="mr-4 inline-flex items-center gap-1.5"
+        >
+          <PiggyBankIcon className="size-6" /> spendwise
+        </Link>
+      </Button>
       <div className="flex items-center gap-2">
         {pages.map((page) => (
           <Button

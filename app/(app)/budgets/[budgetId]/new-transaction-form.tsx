@@ -32,8 +32,15 @@ import { Label } from '@/components/ui/label'
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-import { useQueryClient } from '@tanstack/react-query'
-import { tagQueries } from '@/lib/queries'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { budgetQueries, tagQueries } from '@/lib/queries'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 
 interface Props {
   tags: Pick<Tag, 'id' | 'label'>[]
@@ -45,13 +52,12 @@ interface Props {
 
 export default function NewTransactionForm({
   defaultValues,
-  tags,
   onSuccess = () => {},
 }: Props) {
+  const queryClient = useQueryClient()
+
   const [yourShare, setYourShare] = useState<number | string>(0)
   const [isShared, setIsShared] = useState<boolean>(false)
-
-  const queryClient = useQueryClient()
 
   const form = useForm<z.infer<typeof newTransactionSchema>>({
     resolver: zodResolver(newTransactionSchema),
@@ -72,6 +78,14 @@ export default function NewTransactionForm({
 
   const transactionAmount = form.watch('amount')
   const reimbursements = form.watch('reimbursements')
+  const budgetId = Number(form.watch('budgetId'))
+
+  const budgetsQuery = useQuery(budgetQueries.list())
+  const budgets =
+    !budgetsQuery.isError && !budgetsQuery.isPending ? budgetsQuery.data : []
+
+  const tagsQuery = useQuery(tagQueries.forBudget(budgetId))
+  const tags = !tagsQuery.isError && !tagsQuery.isPending ? tagsQuery.data : []
 
   async function onSubmit(values: NewTransactionSchema) {
     await createTransaction({
@@ -105,6 +119,37 @@ export default function NewTransactionForm({
         className="flex flex-col gap-6"
       >
         <div className="space-y-4">
+          <FormField
+            control={form.control}
+            name="budgetId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Budget</FormLabel>
+                <Select
+                  onValueChange={field.onChange}
+                  defaultValue={String(field.value)}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a budget" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {budgets.map((budget) => (
+                      <SelectItem
+                        key={budget.id}
+                        value={String(budget.id)}
+                      >
+                        {budget.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormDescription></FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="date"

@@ -2,7 +2,8 @@ import Navbar from '@/components/layout/navbar'
 import { Toaster } from '@/components/ui/sonner'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { getUser } from '@/lib/auth/actions'
-import Providers from '@/providers/query-provider'
+import QueryProvider from '@/providers/query-provider'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { redirect } from 'next/navigation'
 
 export default async function Layout({
@@ -17,7 +18,7 @@ export default async function Layout({
   }
 
   return (
-    <Providers>
+    <QueryProvider>
       <TooltipProvider>
         <div className="flex min-h-screen flex-col p-4">
           <Navbar />
@@ -27,6 +28,7 @@ export default async function Layout({
         </div>
         <Toaster richColors />
       </TooltipProvider>
-    </Providers>
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryProvider>
   )
 }
