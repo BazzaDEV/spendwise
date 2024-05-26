@@ -1,4 +1,9 @@
 import { LineChartIcon } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Dashboard | Spendwise',
+}
 
 export default function Page() {
   return (

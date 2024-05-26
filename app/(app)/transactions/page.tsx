@@ -1,4 +1,9 @@
 import { ReceiptIcon } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Transactions | Spendwise',
+}
 
 export default function Page() {
   return (

@@ -291,7 +291,7 @@ export const getBudget = cache(async (data: Pick<Budget, 'id'>) => {
 
   const budget = await db.budget.findFirst({
     where: {
-      id: data.id,
+      id: Number(data.id),
     },
   })
 
