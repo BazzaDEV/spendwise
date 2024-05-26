@@ -32,7 +32,7 @@ export default function NewTransactionDialog() {
       <DialogTrigger asChild>
         <NewTransactionButton />
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="min-w-[750px]">
         <DialogHeader>
           <DialogTitle>New Transaction</DialogTitle>
           <DialogDescription>Create a new transaction here.</DialogDescription>
