@@ -1,7 +1,16 @@
-import { getBudgets } from '@/api/budgets'
+import { getBudgets, getTimePeriods } from '@/api/budgets'
 import { getTagsForBudget } from '@/api/tags'
 import { getTransaction } from '@/api/transactions'
 import { queryOptions } from '@tanstack/react-query'
+
+export const periodQueries = {
+  all: () => ['time-periods'],
+  list: () =>
+    queryOptions({
+      queryKey: [...periodQueries.all(), 'list'],
+      queryFn: () => getTimePeriods(),
+    }),
+}
 
 export const tagQueries = {
   all: () => ['tags'],
@@ -16,7 +25,7 @@ export const budgetQueries = {
   all: () => ['budgets'],
   list: () =>
     queryOptions({
-      queryKey: ['budgets', 'list'],
+      queryKey: [budgetQueries.all(), 'list'],
       queryFn: () => getBudgets(),
     }),
   details: () => [...budgetQueries.all(), 'detail'],
