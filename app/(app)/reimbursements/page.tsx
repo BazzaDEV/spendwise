@@ -1,4 +1,9 @@
 import { HandCoinsIcon } from 'lucide-react'
+import { Metadata } from 'next'
+
+export const metadata: Metadata = {
+  title: 'Reimbursements | Spendwise',
+}
 
 export default function Page() {
   return (
