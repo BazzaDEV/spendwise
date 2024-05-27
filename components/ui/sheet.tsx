@@ -66,7 +66,7 @@ const SheetContent = React.forwardRef<
     >
       <div
         className={cn(
-          'relative m-6 max-w-sm flex-1 rounded-lg border border-border bg-background p-6 shadow-lg',
+          'relative m-6 max-w-sm flex-1 overflow-y-scroll rounded-lg border border-border bg-background p-6 shadow-lg',
           className,
         )}
       >
