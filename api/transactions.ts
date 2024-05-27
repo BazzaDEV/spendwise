@@ -37,6 +37,7 @@ export async function getTransactionsForBudget({
 
   return transactions.map((transaction) => ({
     ...transaction,
+    amount: transaction.amount.toNumber(),
     tags: transaction.tags.map((tag) => tag.tag),
   }))
 }
