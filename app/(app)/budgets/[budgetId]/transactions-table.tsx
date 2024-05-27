@@ -70,7 +70,7 @@ export const columns: ColumnDef<TransactionDetails>[] = [
     cell: ({ row }) => {
       const date = row.getValue<Date>('date')
 
-      return format(date, 'MMM dd, yyyy')
+      return <p className="whitespace-nowrap">{format(date, 'MMM dd, yyyy')}</p>
     },
   },
   {

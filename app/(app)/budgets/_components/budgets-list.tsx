@@ -3,9 +3,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { getBudgetsWithStatistics } from '@/api/budgets'
-import { formatValue } from 'react-currency-input-field'
 import Link from 'next/link'
-import { cn } from '@/lib/utils'
+import { cn, formatCurrency0, formatCurrency2 } from '@/lib/utils'
 
 type ElementType<T> = T extends (infer U)[] ? U : never
 
@@ -43,10 +42,10 @@ const BudgetCard = ({ budget }: { budget: BudgetStatistics }) => {
         </CardHeader>
         <CardContent>
           <div className="mb-2 flex items-center justify-between text-sm">
-            <span>{format(mtdLimit)}</span>
+            <span>{formatCurrency0(mtdLimit)}</span>
             <div className="flex flex-col items-center">
               <span>
-                {format(mtdActual)} / {format(mtdLimit)}
+                {formatCurrency0(mtdActual)} / {formatCurrency0(mtdLimit)}
               </span>
               <span className="font-medium">{mtdProgress.toFixed(0)}%</span>
             </div>
@@ -68,10 +67,10 @@ const BudgetCard = ({ budget }: { budget: BudgetStatistics }) => {
           />
           <div className="mt-2 flex justify-between text-sm">
             <span className="text-muted-foreground">
-              Spent: {format2(mtdActual)}
+              Spent: {formatCurrency2(mtdActual)}
             </span>
             <span className="text-muted-foreground">
-              Remaining: {format2(mtdLimit - mtdActual)}
+              Remaining: {formatCurrency2(mtdLimit - mtdActual)}
             </span>
           </div>
         </CardContent>
@@ -79,17 +78,3 @@ const BudgetCard = ({ budget }: { budget: BudgetStatistics }) => {
     </Link>
   )
 }
-
-const format = (value: number | undefined) =>
-  formatValue({
-    value: String(value),
-    prefix: '$',
-    decimalScale: 0,
-  })
-
-const format2 = (value: number | undefined) =>
-  formatValue({
-    value: String(value),
-    prefix: '$',
-    decimalScale: 2,
-  })
