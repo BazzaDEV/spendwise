@@ -57,7 +57,16 @@ export const getOwedReimbursements = cache(async () => {
   return totals.map((t) => ({
     name: t.payerName,
     amount: t._sum.amount?.toNumber() || 0,
-    reimbursements: reimbursements.filter((r) => r.payerName === t.payerName),
+    reimbursements: reimbursements
+      .filter((r) => r.payerName === t.payerName)
+      .map((r) => ({
+        ...r,
+        amount: r.amount.toNumber(),
+        transaction: {
+          ...r.transaction,
+          amount: r.transaction.amount.toNumber(),
+        },
+      })),
   }))
 })
 
