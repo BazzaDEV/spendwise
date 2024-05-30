@@ -18,14 +18,6 @@ export const getBudgets = cache(async () => {
     where: {
       userId: user.id,
     },
-    // include: {
-    //   monthlyLimits: true,
-    //   transactions: {
-    //     include: {
-    //       reimbursements: true,
-    //     },
-    //   },
-    // },
   })
 
   return budgets.map((budget) => ({
@@ -303,3 +295,30 @@ export const getBudget = cache(async (data: Pick<Budget, 'id'>) => {
 
   return budget
 })
+
+export async function getBudgetTransactions(id: number) {
+  const user = await getUserOrRedirect()
+
+  if (!user) {
+    throw new Error('Unauthenticated')
+  }
+
+  const transactions = await db.transaction.findMany({
+    where: {
+      budgetId: id,
+    },
+    include: {
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
+    },
+  })
+
+  return transactions.map((transaction) => ({
+    ...transaction,
+    amount: transaction.amount.toNumber(),
+    tags: transaction.tags.map((tag) => tag.tag),
+  }))
+}

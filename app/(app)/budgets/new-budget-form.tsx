@@ -35,7 +35,7 @@ interface NewBudgetFormProps {
 export default function NewBudgetForm(props: NewBudgetFormProps) {
   const timePeriods = useQuery(periodQueries.list())
 
-  const { mutateAsync, isPending } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: createBudget,
     onSuccess: (data) => {
       toast.success('Budget was created.')
@@ -60,8 +60,8 @@ export default function NewBudgetForm(props: NewBudgetFormProps) {
   })
 
   // 2. Define a submit handler.
-  async function onSubmit(values: z.infer<typeof newBudgetSchema>) {
-    await mutateAsync(values)
+  function onSubmit(values: z.infer<typeof newBudgetSchema>) {
+    mutate(values)
   }
 
   return (

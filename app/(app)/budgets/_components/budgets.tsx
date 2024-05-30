@@ -1,13 +1,20 @@
-export const dynamic = 'force-dynamic'
+'use client'
 
-import { getBudgetsWithStatistics } from '@/api/budgets'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { BudgetsList } from './budgets-list'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { budgetQueries } from '@/lib/queries'
 
-export async function Budgets() {
-  const data = await getBudgetsWithStatistics()
+export function Budgets() {
+  const { data, error, isFetching } = useSuspenseQuery(
+    budgetQueries.statistics(),
+  )
+
+  if (error && !isFetching) {
+    throw error
+  }
 
   return <BudgetsList data={data} />
 }

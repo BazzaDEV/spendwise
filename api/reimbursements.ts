@@ -2,8 +2,9 @@
 
 import { getUserOrRedirect } from '@/lib/auth/actions'
 import db from '@/lib/db'
+import { formatCurrency2 } from '@/lib/utils'
 import { revalidatePath } from 'next/cache'
-import { unique } from 'radash'
+import { sum, unique } from 'radash'
 import { cache } from 'react'
 
 export const getOwedReimbursements = cache(async () => {
@@ -54,20 +55,28 @@ export const getOwedReimbursements = cache(async () => {
     ],
   })
 
-  return totals.map((t) => ({
-    name: t.payerName,
-    amount: t._sum.amount?.toNumber() || 0,
-    reimbursements: reimbursements
-      .filter((r) => r.payerName === t.payerName)
-      .map((r) => ({
-        ...r,
-        amount: r.amount.toNumber(),
-        transaction: {
-          ...r.transaction,
-          amount: r.transaction.amount.toNumber(),
-        },
-      })),
-  }))
+  const total = sum(reimbursements.map((r) => r.amount.toNumber()))
+
+  return {
+    total: {
+      value: total,
+      formatted: formatCurrency2(total),
+    },
+    data: totals.map((t) => ({
+      name: t.payerName,
+      amount: t._sum.amount?.toNumber() || 0,
+      reimbursements: reimbursements
+        .filter((r) => r.payerName === t.payerName)
+        .map((r) => ({
+          ...r,
+          amount: r.amount.toNumber(),
+          transaction: {
+            ...r.transaction,
+            amount: r.transaction.amount.toNumber(),
+          },
+        })),
+    })),
+  }
 })
 
 export const settleReimbursementsById = cache(async (ids: string[]) => {

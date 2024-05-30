@@ -26,7 +26,6 @@ import { cn } from '@/lib/utils'
 import { CalendarIcon, Trash } from 'lucide-react'
 import { createTransaction } from '@/api/transactions'
 import { MultiSelect } from '@/components/ui/multi-select'
-import { Tag } from '@prisma/client'
 import { CurrencyInput } from '@/components/ui/currency-input'
 import { Label } from '@/components/ui/label'
 import { useState } from 'react'
@@ -43,17 +42,13 @@ import {
 } from '@/components/ui/select'
 
 interface Props {
-  tags: Pick<Tag, 'id' | 'label'>[]
   defaultValues?: {
     budgetId: number
   }
-  onSuccess?: () => void
+  closeDialog: () => void
 }
 
-export default function NewTransactionForm({
-  defaultValues,
-  onSuccess = () => {},
-}: Props) {
+export default function NewTransactionForm(props: Props) {
   const queryClient = useQueryClient()
 
   const [yourShare, setYourShare] = useState<number | string>(0)
@@ -66,7 +61,7 @@ export default function NewTransactionForm({
       date: new Date(),
       tags: [],
       description: '',
-      budgetId: defaultValues?.budgetId ?? 0,
+      budgetId: props.defaultValues?.budgetId ?? 0,
       reimbursements: [],
     },
   })
@@ -80,7 +75,7 @@ export default function NewTransactionForm({
   const reimbursements = form.watch('reimbursements')
   const budgetId = Number(form.watch('budgetId'))
 
-  const budgetsQuery = useQuery(budgetQueries.list())
+  const budgetsQuery = useQuery(budgetQueries.lists())
   const budgets =
     !budgetsQuery.isError && !budgetsQuery.isPending ? budgetsQuery.data : []
 
@@ -97,7 +92,7 @@ export default function NewTransactionForm({
 
     queryClient.invalidateQueries(tagQueries.forBudget(values.budgetId))
 
-    onSuccess()
+    props.closeDialog()
   }
 
   function splitEvenly() {

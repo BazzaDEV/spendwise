@@ -30,10 +30,17 @@ import { Checkbox } from '@/components/ui/checkbox'
 
 type ElementType<T> = T extends (infer U)[] ? U : never
 
+type PropertyType<T, K extends keyof T> = T[K]
+
 type AllUserReimbursementsAPIResponse = Awaited<
   ReturnType<typeof getOwedReimbursements>
 >
-type UserReimbursements = ElementType<AllUserReimbursementsAPIResponse>
+
+type UserReimbursementsArray = PropertyType<
+  AllUserReimbursementsAPIResponse,
+  'data'
+>
+type UserReimbursements = ElementType<UserReimbursementsArray>
 
 export default function UserReimbursements(props: {
   person: UserReimbursements

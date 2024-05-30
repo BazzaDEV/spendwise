@@ -1,12 +1,9 @@
-import { getTransactionsForBudget } from '@/api/transactions'
 import { TransactionsTable } from './transactions-table'
 import { Skeleton } from '@/components/ui/skeleton'
 import { NewTransactionButton } from './new-transaction-dialog'
 
-export async function Transactions({ budgetId }: { budgetId: number }) {
-  const transactions = await getTransactionsForBudget({ budgetId })
-
-  return <TransactionsTable data={transactions} />
+export function Transactions() {
+  return <TransactionsTable />
 }
 
 export const TransactionsSkeleton = () => (
