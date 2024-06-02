@@ -271,6 +271,27 @@ export async function createBudget(data: NewBudgetSchema) {
   return newBudget
 }
 
+export const deleteBudget = cache(async (id: number) => {
+  const user = await getUserOrRedirect()
+
+  if (!user) throw new Error('Unauthenticated')
+
+  const budget = await db.budget.findUnique({
+    where: { id },
+  })
+
+  if (!budget) throw new Error('Budget does not exist.')
+
+  if (budget.userId !== user.id)
+    throw new Error('You cannot delete this budget.')
+
+  return await db.budget.delete({
+    where: {
+      id,
+    },
+  })
+})
+
 export const getBudget = cache(async (data: Pick<Budget, 'id'>) => {
   const user = await getUserOrRedirect()
 
