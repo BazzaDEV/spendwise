@@ -27,6 +27,7 @@ import { getBudgets } from '@/api/budgets'
 import { deleteTransactions, updateTransactions } from '@/api/transactions'
 import { TransactionDetails } from './transactions-table'
 import { toast } from 'sonner'
+import { budgetQueries, getQueryClient } from '@/lib/queries'
 
 interface TransactionsTableFloatingBarProps {
   table: Table<TransactionDetails>
@@ -34,18 +35,20 @@ interface TransactionsTableFloatingBarProps {
 export function TransactionsTableFloatingBar({
   table,
 }: TransactionsTableFloatingBarProps) {
+  const queryClient = getQueryClient()
+
   const rows = table.getFilteredSelectedRowModel().rows
   const selectedIds = rows.map((row) => row.original.id)
 
   const budgets = useQuery({
-    queryKey: ['budgets'],
-    queryFn: () => getBudgets(),
+    ...budgetQueries.lists(),
     select: (data) => data.map(({ id, name }) => ({ id, name })),
   })
 
   const updateMutation = useMutation({
     mutationFn: updateTransactions,
     onSuccess: () => {
+      queryClient.invalidateQueries()
       toast.success('Transactions have been updated.')
     },
     onError: () => {

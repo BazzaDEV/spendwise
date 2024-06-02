@@ -3,7 +3,6 @@
 import { getUserOrRedirect } from '@/lib/auth/actions'
 import db from '@/lib/db'
 import { formatCurrency2 } from '@/lib/utils'
-import { revalidatePath } from 'next/cache'
 import { sum, unique } from 'radash'
 import { cache } from 'react'
 
@@ -79,7 +78,7 @@ export const getOwedReimbursements = cache(async () => {
   }
 })
 
-export const settleReimbursementsById = cache(async (ids: string[]) => {
+export const settleReimbursementsById = async (ids: string[]) => {
   const user = await getUserOrRedirect()
 
   if (!user) {
@@ -116,7 +115,4 @@ export const settleReimbursementsById = cache(async (ids: string[]) => {
       received: true,
     },
   })
-
-  affectedBudgets.forEach((id) => revalidatePath(`/budgets/${id}`))
-  affectedTransactions.forEach((id) => revalidatePath(`/transactions/${id}`))
-})
+}

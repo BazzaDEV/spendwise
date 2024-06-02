@@ -4,7 +4,6 @@ import { getUserOrRedirect } from '@/lib/auth/actions'
 import db from '@/lib/db'
 import { NewBudgetSchema } from '@/lib/schemas'
 import { Budget } from '@prisma/client'
-import { revalidatePath } from 'next/cache'
 import { cache } from 'react'
 
 export const getBudgets = cache(async () => {
@@ -268,8 +267,6 @@ export async function createBudget(data: NewBudgetSchema) {
       },
     },
   })
-
-  revalidatePath(`/dashboard`)
 
   return newBudget
 }

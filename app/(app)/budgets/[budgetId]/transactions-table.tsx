@@ -32,7 +32,7 @@ import { useSuspenseQuery } from '@tanstack/react-query'
 import { transactionQueries } from '@/lib/queries'
 import { useParams } from 'next/navigation'
 
-type TransactionDetails = ExtractArrayElementType<
+export type TransactionDetails = ExtractArrayElementType<
   typeof getTransactionsForBudget
 >
 

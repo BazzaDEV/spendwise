@@ -35,7 +35,7 @@ export default function NewTransactionDialog() {
         </DialogHeader>
         <NewTransactionForm
           defaultValues={{ budgetId }}
-          onSuccess={() => setOpen(false)}
+          closeDialog={() => setOpen(false)}
         />
       </DialogContent>
     </Dialog>

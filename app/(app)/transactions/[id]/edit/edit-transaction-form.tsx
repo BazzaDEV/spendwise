@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/popover'
 import { EditTransactionSchema, editTransactionSchema } from '@/lib/schemas'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 import { useFieldArray, useForm } from 'react-hook-form'
 import { cn } from '@/lib/utils'
 import { format } from 'date-fns'
@@ -40,7 +40,12 @@ import Link from 'next/link'
 import { updateTransaction } from '@/api/transactions'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { budgetQueries, tagQueries } from '@/lib/queries'
+import {
+  budgetQueries,
+  getQueryClient,
+  tagQueries,
+  transactionQueries,
+} from '@/lib/queries'
 
 interface EditTransactionFormProps {
   data: EditTransactionSchema
@@ -50,6 +55,27 @@ export default function EditTransactionForm({
   data,
 }: EditTransactionFormProps) {
   const router = useRouter()
+  const queryClient = getQueryClient()
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: updateTransaction,
+    onSuccess: (res) => {
+      queryClient.invalidateQueries(transactionQueries.forBudget(res!.budgetId))
+      queryClient.invalidateQueries(tagQueries.forBudget(res!.budgetId))
+
+      if (res!.budgetId !== data.budgetId) {
+        queryClient.invalidateQueries(
+          transactionQueries.forBudget(data.budgetId),
+        )
+        queryClient.invalidateQueries(tagQueries.forBudget(data.budgetId))
+      }
+
+      queryClient.invalidateQueries(transactionQueries.detail(res!.id))
+
+      toast.success('Transaction was updated.')
+      router.push(`/budgets/${res!.budgetId}`)
+    },
+  })
 
   const actualAmount =
     Number(data.amount) -
@@ -101,13 +127,8 @@ export default function EditTransactionForm({
     form.setValue('reimbursements', updatedReimbursements)
   }
 
-  // console.log(JSON.stringify(form.formState.errors, null, '\t'))
-
-  async function onSubmit(values: EditTransactionSchema) {
-    await updateTransaction(values)
-
-    toast.success('Transaction was updated.')
-    router.push(`/budgets/${values.budgetId}`)
+  function onSubmit(values: EditTransactionSchema) {
+    mutate(values)
   }
 
   return (
@@ -126,6 +147,7 @@ export default function EditTransactionForm({
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={String(field.value)}
+                  disabled={isPending}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -163,6 +185,7 @@ export default function EditTransactionForm({
                           'w-full pl-3 text-left font-normal',
                           !field.value && 'text-muted-foreground',
                         )}
+                        disabled={isPending}
                       >
                         {field.value ? (
                           format(field.value, 'PPP')
@@ -219,6 +242,7 @@ export default function EditTransactionForm({
                 <FormControl>
                   <Input
                     placeholder="Coffee @ Happy Goat"
+                    disabled={isPending}
                     {...field}
                   />
                 </FormControl>
@@ -239,6 +263,7 @@ export default function EditTransactionForm({
                     onValueChange={(value) =>
                       field.onChange(!value ? '' : value)
                     }
+                    disabled={isPending}
                   />
                 </FormControl>
                 <FormDescription></FormDescription>
@@ -253,6 +278,7 @@ export default function EditTransactionForm({
             defaultChecked={false}
             checked={isShared}
             onCheckedChange={() => setIsShared(!isShared)}
+            disabled={isPending}
           />
           <Label className="text-sm font-medium">
             This is a shared expense.
@@ -268,6 +294,7 @@ export default function EditTransactionForm({
               <CurrencyInput
                 value={yourShare}
                 onValueChange={(value) => setYourShare(!value ? '' : value)}
+                disabled={isPending}
               />
             </div>
             <div>
@@ -275,6 +302,7 @@ export default function EditTransactionForm({
                 type="button"
                 variant="outline"
                 onClick={splitEvenly}
+                disabled={isPending}
               >
                 Split Evenly
               </Button>
@@ -300,6 +328,7 @@ export default function EditTransactionForm({
                       <FormControl>
                         <Input
                           placeholder="Who?"
+                          disabled={isPending}
                           {...field}
                         />
                       </FormControl>
@@ -322,6 +351,7 @@ export default function EditTransactionForm({
                           onValueChange={(value) =>
                             field.onChange(!value ? '' : value)
                           }
+                          disabled={isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -338,6 +368,7 @@ export default function EditTransactionForm({
                       <FormControl>
                         <Input
                           placeholder="Anything to note?"
+                          disabled={isPending}
                           {...field}
                         />
                       </FormControl>
@@ -352,6 +383,7 @@ export default function EditTransactionForm({
                     variant="destructive"
                     type="button"
                     onClick={() => remove(index)}
+                    disabled={isPending}
                   >
                     <Trash className="size-4" />
                   </Button>
@@ -363,18 +395,23 @@ export default function EditTransactionForm({
             type="button"
             variant="secondary"
             onClick={() => append({ payerName: '', amount: 0, note: '' })}
+            disabled={isPending}
           >
             Add Reimbursement
           </Button>
         </div>
         <div className="grid grid-cols-2 gap-2">
-          <Button onClick={() => form.handleSubmit(onSubmit)}>
+          <Button
+            onClick={() => form.handleSubmit(onSubmit)}
+            disabled={isPending}
+          >
             Save changes
           </Button>
           <Button
             type="button"
             variant="secondary"
             asChild
+            disabled={isPending}
           >
             <Link href={`/budgets/${data.budgetId}`}>Cancel</Link>
           </Button>
