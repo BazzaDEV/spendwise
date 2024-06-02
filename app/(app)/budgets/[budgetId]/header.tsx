@@ -1,9 +1,12 @@
-import { getBudget } from '@/api/budgets'
-import { Skeleton } from '@/components/ui/skeleton'
-import { cn } from '@/lib/utils'
+'use client'
 
-export async function Header({ id }: { id: number }) {
-  const budget = await getBudget({ id })
+import { Skeleton } from '@/components/ui/skeleton'
+import { budgetQueries } from '@/lib/queries'
+import { cn } from '@/lib/utils'
+import { useSuspenseQuery } from '@tanstack/react-query'
+
+export function Header({ id }: { id: number }) {
+  const { data } = useSuspenseQuery(budgetQueries.list(id))
 
   return (
     <h1
@@ -12,7 +15,7 @@ export async function Header({ id }: { id: number }) {
         'text-4xl font-semibold tracking-tighter',
       )}
     >
-      {budget.name}
+      {data.name}
     </h1>
   )
 }

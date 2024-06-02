@@ -11,8 +11,6 @@ import {
 } from '@/components/ui/dialog'
 import { CirclePlusIcon } from 'lucide-react'
 import NewTransactionForm from './new-transaction-form'
-import { useQuery } from '@tanstack/react-query'
-import { tagQueries } from '@/lib/queries'
 import { useParams } from 'next/navigation'
 import { forwardRef, useState } from 'react'
 
@@ -21,8 +19,6 @@ export default function NewTransactionDialog() {
 
   const params = useParams<{ budgetId: string }>()
   const budgetId = Number(params.budgetId)
-
-  const tagsQuery = useQuery(tagQueries.forBudget(budgetId))
 
   return (
     <Dialog
@@ -38,9 +34,8 @@ export default function NewTransactionDialog() {
           <DialogDescription>Create a new transaction here.</DialogDescription>
         </DialogHeader>
         <NewTransactionForm
-          tags={tagsQuery.data ?? []}
           defaultValues={{ budgetId }}
-          onSuccess={() => setOpen(false)}
+          closeDialog={() => setOpen(false)}
         />
       </DialogContent>
     </Dialog>

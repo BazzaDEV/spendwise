@@ -26,18 +26,22 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { useMutation, useQuery } from '@tanstack/react-query'
-import { periodQueries } from '@/lib/queries'
+import { budgetQueries, getQueryClient, periodQueries } from '@/lib/queries'
 
 interface NewBudgetFormProps {
   closeDialog: () => void
 }
 
 export default function NewBudgetForm(props: NewBudgetFormProps) {
+  const queryClient = getQueryClient()
   const timePeriods = useQuery(periodQueries.list())
 
-  const { mutateAsync, isPending } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: createBudget,
     onSuccess: (data) => {
+      queryClient.invalidateQueries(budgetQueries.lists())
+      queryClient.invalidateQueries(budgetQueries.statistics())
+
       toast.success('Budget was created.')
       props.closeDialog()
     },
@@ -60,8 +64,8 @@ export default function NewBudgetForm(props: NewBudgetFormProps) {
   })
 
   // 2. Define a submit handler.
-  async function onSubmit(values: z.infer<typeof newBudgetSchema>) {
-    await mutateAsync(values)
+  function onSubmit(values: z.infer<typeof newBudgetSchema>) {
+    mutate(values)
   }
 
   return (

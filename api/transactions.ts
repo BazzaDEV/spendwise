@@ -8,7 +8,6 @@ import {
   UpdateTransactionSchema,
 } from '@/lib/schemas'
 import { Prisma, Transaction } from '@prisma/client'
-import { revalidatePath } from 'next/cache'
 import { diff, omit, unique } from 'radash'
 
 export async function getTransactionsForBudget({
@@ -46,9 +45,7 @@ export async function createTransaction(data: NewTransactionSchema) {
   const user = await getUserOrRedirect()
 
   if (!user) {
-    return {
-      error: 'Unauthenticated',
-    }
+    throw new Error('Unauthenticated')
   }
 
   const tagLabels = unique(data.tags.map((t) => t.label))
@@ -64,8 +61,6 @@ export async function createTransaction(data: NewTransactionSchema) {
 
   const existingTagLabels = existingTags.map((t) => t.label)
   const newTagLabels = diff(tagLabels, existingTagLabels)
-
-  console.log(JSON.stringify({ ...data }, null, '\t'))
 
   const newTags = await db.tag.createManyAndReturn({
     data: newTagLabels.map((l) => ({ label: l, budgetId: data.budgetId })),
@@ -109,8 +104,6 @@ export async function createTransaction(data: NewTransactionSchema) {
       reimbursements: true,
     },
   })
-
-  revalidatePath(`/budgets/${data.budgetId}`)
 
   return { ...newTransaction, tags: newTransaction.tags.map((tag) => tag.tag) }
 }
@@ -227,8 +220,11 @@ export async function updateTransaction(data: EditTransactionSchema) {
     )
   })
 
-  revalidatePath(`/budgets/${data.budgetId}`)
-  revalidatePath(`/transactions/${data.id}`)
+  return await db.transaction.findUnique({
+    where: {
+      id: data.id,
+    },
+  })!
 }
 
 export async function updateTransactions({
@@ -318,10 +314,6 @@ export async function updateTransactions({
           })
         }
       }
-
-      revalidatePath(`/budgets/${oldBudgetId}`)
-      revalidatePath(`/budgets/${newBudgetId}`)
-      revalidatePath(`/transactions/${transactionId}`)
     })
   }
 }
@@ -381,9 +373,6 @@ export async function deleteTransaction({
     },
   })
 
-  revalidatePath(`/budgets/${deletedTransaction.budgetId}`)
-  revalidatePath(`/transactions/${deletedTransaction.id}`)
-
   return deletedTransaction
 }
 
@@ -414,6 +403,4 @@ export async function deleteTransactions({ ids }: { ids: string[] }) {
       },
     },
   })
-
-  affectedBudgets.forEach((id) => revalidatePath(`/budgets/${id}`))
 }

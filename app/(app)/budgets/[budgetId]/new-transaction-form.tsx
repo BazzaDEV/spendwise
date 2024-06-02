@@ -26,14 +26,13 @@ import { cn } from '@/lib/utils'
 import { CalendarIcon, Trash } from 'lucide-react'
 import { createTransaction } from '@/api/transactions'
 import { MultiSelect } from '@/components/ui/multi-select'
-import { Tag } from '@prisma/client'
 import { CurrencyInput } from '@/components/ui/currency-input'
 import { Label } from '@/components/ui/label'
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { budgetQueries, tagQueries } from '@/lib/queries'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { budgetQueries, tagQueries, transactionQueries } from '@/lib/queries'
 import {
   Select,
   SelectContent,
@@ -43,17 +42,13 @@ import {
 } from '@/components/ui/select'
 
 interface Props {
-  tags: Pick<Tag, 'id' | 'label'>[]
   defaultValues?: {
     budgetId: number
   }
-  onSuccess?: () => void
+  closeDialog: () => void
 }
 
-export default function NewTransactionForm({
-  defaultValues,
-  onSuccess = () => {},
-}: Props) {
+export default function NewTransactionForm(props: Props) {
   const queryClient = useQueryClient()
 
   const [yourShare, setYourShare] = useState<number | string>(0)
@@ -66,7 +61,7 @@ export default function NewTransactionForm({
       date: new Date(),
       tags: [],
       description: '',
-      budgetId: defaultValues?.budgetId ?? 0,
+      budgetId: props.defaultValues?.budgetId ?? 0,
       reimbursements: [],
     },
   })
@@ -76,28 +71,34 @@ export default function NewTransactionForm({
     name: 'reimbursements',
   })
 
+  const { mutate, isPending } = useMutation({
+    mutationFn: createTransaction,
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(transactionQueries.forBudget(data.budgetId))
+      queryClient.invalidateQueries(tagQueries.forBudget(data.budgetId))
+
+      toast.success('Transaction created.')
+
+      props.closeDialog()
+    },
+  })
+
   const transactionAmount = form.watch('amount')
   const reimbursements = form.watch('reimbursements')
   const budgetId = Number(form.watch('budgetId'))
 
-  const budgetsQuery = useQuery(budgetQueries.list())
+  const budgetsQuery = useQuery(budgetQueries.lists())
   const budgets =
     !budgetsQuery.isError && !budgetsQuery.isPending ? budgetsQuery.data : []
 
   const tagsQuery = useQuery(tagQueries.forBudget(budgetId))
   const tags = !tagsQuery.isError && !tagsQuery.isPending ? tagsQuery.data : []
 
-  async function onSubmit(values: NewTransactionSchema) {
-    await createTransaction({
+  function onSubmit(values: NewTransactionSchema) {
+    mutate({
       ...values,
       reimbursements: isShared ? values.reimbursements : [],
     })
-
-    toast.success('Transaction created.')
-
-    queryClient.invalidateQueries(tagQueries.forBudget(values.budgetId))
-
-    onSuccess()
   }
 
   function splitEvenly() {
@@ -128,6 +129,7 @@ export default function NewTransactionForm({
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={String(field.value)}
+                  disabled={isPending}
                 >
                   <FormControl>
                     <SelectTrigger>
@@ -165,6 +167,7 @@ export default function NewTransactionForm({
                           'w-full pl-3 text-left font-normal',
                           !field.value && 'text-muted-foreground',
                         )}
+                        disabled={isPending}
                       >
                         {field.value ? (
                           format(field.value, 'PPP')
@@ -221,6 +224,7 @@ export default function NewTransactionForm({
                 <FormControl>
                   <Input
                     placeholder="Coffee @ Happy Goat"
+                    disabled={isPending}
                     {...field}
                   />
                 </FormControl>
@@ -241,6 +245,7 @@ export default function NewTransactionForm({
                     onValueChange={(value) =>
                       field.onChange(!value ? '' : value)
                     }
+                    disabled={isPending}
                   />
                 </FormControl>
                 <FormDescription></FormDescription>
@@ -254,6 +259,7 @@ export default function NewTransactionForm({
             defaultChecked={false}
             checked={isShared}
             onCheckedChange={() => setIsShared(!isShared)}
+            disabled={isPending}
           />
           <Label className="text-sm font-medium">
             This is a shared expense.
@@ -269,6 +275,7 @@ export default function NewTransactionForm({
               <CurrencyInput
                 value={yourShare}
                 onValueChange={(value) => setYourShare(!value ? '' : value)}
+                disabled={isPending}
               />
             </div>
             <div>
@@ -276,6 +283,7 @@ export default function NewTransactionForm({
                 type="button"
                 variant="outline"
                 onClick={splitEvenly}
+                disabled={isPending}
               >
                 Split Evenly
               </Button>
@@ -301,6 +309,7 @@ export default function NewTransactionForm({
                       <FormControl>
                         <Input
                           placeholder="Who?"
+                          disabled={isPending}
                           {...field}
                         />
                       </FormControl>
@@ -323,6 +332,7 @@ export default function NewTransactionForm({
                           onValueChange={(value) =>
                             field.onChange(!value ? '' : value)
                           }
+                          disabled={isPending}
                         />
                       </FormControl>
                       <FormMessage />
@@ -339,6 +349,7 @@ export default function NewTransactionForm({
                       <FormControl>
                         <Input
                           placeholder="Anything to note?"
+                          disabled={isPending}
                           {...field}
                         />
                       </FormControl>
@@ -353,6 +364,7 @@ export default function NewTransactionForm({
                     variant="destructive"
                     type="button"
                     onClick={() => remove(index)}
+                    disabled={isPending}
                   >
                     <Trash className="size-4" />
                   </Button>
@@ -364,6 +376,7 @@ export default function NewTransactionForm({
             type="button"
             variant="secondary"
             onClick={() => append({ payerName: '', amount: 0, note: '' })}
+            disabled={isPending}
           >
             Add Reimbursement
           </Button>
@@ -371,6 +384,7 @@ export default function NewTransactionForm({
         <Button
           type="submit"
           className="col-span-4"
+          disabled={isPending}
         >
           Submit
         </Button>
