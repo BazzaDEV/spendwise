@@ -66,6 +66,8 @@ export function TransactionsTableFloatingBar({
     },
   })
 
+  const isPending = updateMutation.isPending || deleteMutation.isPending
+
   return rows.length > 0 ? (
     <div className="fixed inset-x-0 bottom-4 z-50 mx-auto w-fit px-4">
       <div className="rounded-md border bg-card p-2 shadow-2xl">
@@ -78,6 +80,7 @@ export function TransactionsTableFloatingBar({
                   variant="secondary"
                   className="h-fit w-full rounded-full border border-border p-0.5"
                   onClick={() => table.toggleAllRowsSelected(false)}
+                  disabled={isPending}
                 >
                   <XIcon className="size-3" />
                 </Button>
@@ -91,7 +94,7 @@ export function TransactionsTableFloatingBar({
           />
           <div className="flex gap-1">
             <Select
-              disabled={updateMutation.isPending}
+              disabled={isPending}
               onValueChange={(value) =>
                 updateMutation.mutateAsync({
                   ids: selectedIds,
@@ -105,6 +108,7 @@ export function TransactionsTableFloatingBar({
                     <Button
                       variant="secondary"
                       className="h-fit w-fit border px-2"
+                      disabled={isPending}
                     >
                       {updateMutation.isPending ? (
                         <RotateCwIcon className="size-4 animate-spin" />
@@ -135,7 +139,7 @@ export function TransactionsTableFloatingBar({
                 <Button
                   variant="destructive"
                   className="h-fit w-fit border px-2"
-                  disabled={deleteMutation.isPending}
+                  disabled={isPending}
                   onClick={() => deleteMutation.mutateAsync()}
                 >
                   {deleteMutation.isPending ? (
