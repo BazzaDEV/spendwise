@@ -2,9 +2,29 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
-import { getBudgetsWithStatistics } from '@/api/budgets'
+import { deleteBudget, getBudgetsWithStatistics } from '@/api/budgets'
 import Link from 'next/link'
 import { cn, formatCurrency0, formatCurrency2 } from '@/lib/utils'
+import { EllipsisVerticalIcon, TrashIcon } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useRouter } from 'next/navigation'
+import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
+import {
+  budgetQueries,
+  getQueryClient,
+  reimbursementQueries,
+  tagQueries,
+  transactionQueries,
+} from '@/lib/queries'
 
 type ElementType<T> = T extends (infer U)[] ? U : never
 
@@ -31,14 +51,57 @@ export const BudgetsList = ({ data }: { data: BudgetStatistics[] }) => {
 }
 
 const BudgetCard = ({ budget }: { budget: BudgetStatistics }) => {
+  const router = useRouter()
+  const queryClient = getQueryClient()
+
   const { statistics } = budget
   const { mtdLimit, mtdGross, mtdActual, mtdProgress } = statistics!
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: () => deleteBudget(budget.id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(budgetQueries.lists())
+      queryClient.invalidateQueries(budgetQueries.list(budget.id))
+      queryClient.invalidateQueries(budgetQueries.statistics())
+      queryClient.invalidateQueries(transactionQueries.forBudget(budget.id))
+      queryClient.invalidateQueries(tagQueries.forBudget(budget.id))
+      queryClient.invalidateQueries(reimbursementQueries.owed())
+
+      toast.success(`${budget.name} budget was deleted.`)
+    },
+    onError: (error) => toast.error(error.message),
+  })
 
   return (
     <Link href={`/budgets/${budget.id}`}>
       <Card className="transition-all ease-in-out hover:cursor-pointer hover:border-muted-foreground hover:shadow-md">
         <CardHeader>
-          <CardTitle>{budget.name}</CardTitle>
+          <div className="flex flex-row items-center justify-between">
+            <CardTitle>{budget.name}</CardTitle>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                >
+                  <EllipsisVerticalIcon className="size-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="z-50">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    mutate()
+                  }}
+                  className="inline-flex w-full items-center gap-1.5"
+                >
+                  <TrashIcon className="size-4 text-muted-foreground" /> Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="mb-2 flex items-center justify-between text-sm">
