@@ -17,8 +17,8 @@ import { forwardRef, useState } from 'react'
 export default function NewTransactionDialog() {
   const [open, setOpen] = useState<boolean>(false)
 
-  const params = useParams<{ budgetId: string }>()
-  const budgetId = Number(params.budgetId)
+  const params = useParams<{ id: string }>()
+  const budgetId = Number(params.id)
 
   return (
     <Dialog
