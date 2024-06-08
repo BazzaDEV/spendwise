@@ -159,8 +159,8 @@ export function TransactionsTable() {
     { id: 'date', desc: true },
   ])
 
-  const params = useParams<{ budgetId: string }>()
-  const budgetId = Number(params.budgetId)
+  const params = useParams<{ id: string }>()
+  const budgetId = Number(params.id)
 
   const { data } = useSuspenseQuery(transactionQueries.forBudget(budgetId))
 

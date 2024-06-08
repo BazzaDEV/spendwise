@@ -5,7 +5,12 @@ import { Progress } from '@/components/ui/progress'
 import { deleteBudget, getBudgetsWithStatistics } from '@/api/budgets'
 import Link from 'next/link'
 import { cn, formatCurrency0, formatCurrency2 } from '@/lib/utils'
-import { EllipsisVerticalIcon, TrashIcon } from 'lucide-react'
+import {
+  EllipsisVerticalIcon,
+  PencilIcon,
+  SettingsIcon,
+  TrashIcon,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
@@ -25,6 +30,7 @@ import {
   tagQueries,
   transactionQueries,
 } from '@/lib/queries'
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog'
 
 type ElementType<T> = T extends (infer U)[] ? U : never
 
@@ -93,11 +99,20 @@ const BudgetCard = ({ budget }: { budget: BudgetStatistics }) => {
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.stopPropagation()
+                    router.push(`/budgets/${budget.id}/settings`)
+                  }}
+                  className="inline-flex w-full items-center gap-1.5"
+                >
+                  <SettingsIcon className="size-4" /> Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={(e) => {
+                    e.stopPropagation()
                     mutate()
                   }}
                   className="inline-flex w-full items-center gap-1.5"
                 >
-                  <TrashIcon className="size-4 text-muted-foreground" /> Delete
+                  <TrashIcon className="size-4" /> Delete
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
