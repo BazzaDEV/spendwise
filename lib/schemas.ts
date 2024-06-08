@@ -12,6 +12,21 @@ export const newBudgetSchema = z.object({
 
 export type NewBudgetSchema = z.infer<typeof newBudgetSchema>
 
+export const editBudgetLimitSchema = z.object({
+  id: z.coerce.number(),
+  timePeriodId: z.coerce.number(),
+  amount: z.union([z.number(), z.string().min(1)]),
+})
+
+export type EditBudgetLimitSchema = z.infer<typeof editBudgetLimitSchema>
+
+export const budgetSettingsSchema = newBudgetSchema.extend({
+  id: z.coerce.number(),
+  budgetLimit: editBudgetLimitSchema,
+})
+
+export type BudgetSettingsSchema = z.infer<typeof budgetSettingsSchema>
+
 export const newReimbursementSchema = z.object({
   payerName: z.string().min(1, 'Name is required'),
   amount: z.coerce.number().gt(0, 'Amount must be greater than $0'),

@@ -1,5 +1,6 @@
 import {
   getBudget,
+  getBudgetDetails,
   getBudgets,
   getBudgetsWithStatistics,
   getTimePeriods,
@@ -81,6 +82,12 @@ export const budgetQueries = {
     queryOptions({
       queryKey: [...budgetQueries.all(), 'list', id],
       queryFn: () => getBudget({ id }),
+    }),
+  details: () => [...budgetQueries.all(), 'detail'],
+  detail: (id: number) =>
+    queryOptions({
+      queryKey: [...budgetQueries.details(), id],
+      queryFn: () => getBudgetDetails({ id }),
     }),
   statistics: () =>
     queryOptions({

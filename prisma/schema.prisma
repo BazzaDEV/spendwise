@@ -53,7 +53,7 @@ model BudgetLimit {
   timePeriod   TimePeriod @relation(fields: [timePeriodId], references: [id])
   timePeriodId Int
   budgetId     Int        @unique
-  budget       Budget     @relation(fields: [budgetId], references: [id])
+  budget       Budget     @relation(fields: [budgetId], references: [id], onDelete: Cascade)
 }
 
 model TimePeriod {
@@ -67,7 +67,7 @@ model Transaction {
   amount         Decimal            @default(0)
   date           DateTime           @default(now())
   description    String?
-  budget         Budget             @relation(fields: [budgetId], references: [id])
+  budget         Budget             @relation(fields: [budgetId], references: [id], onDelete: Cascade)
   budgetId       Int
   tags           TagOnTransaction[]
   payer          User               @relation(fields: [payerId], references: [id])

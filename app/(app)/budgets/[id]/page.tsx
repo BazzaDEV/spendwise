@@ -15,7 +15,7 @@ import { HydrationBoundary, dehydrate } from '@tanstack/react-query'
 
 interface Props {
   params: {
-    budgetId: number
+    id: number
   }
 }
 
@@ -33,7 +33,7 @@ interface Props {
 // }
 
 export default function Page({ params }: Props) {
-  const budgetId = Number(params.budgetId)
+  const budgetId = Number(params.id)
 
   const queryClient = getQueryClient()
 
