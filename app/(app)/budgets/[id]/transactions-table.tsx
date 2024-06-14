@@ -31,6 +31,7 @@ import TransactionsTableToolbar from './transactions-table-toolbar'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { getQueryClient, transactionQueries } from '@/lib/queries'
 import { useParams } from 'next/navigation'
+import { toast } from 'sonner'
 
 export type TransactionDetails = ExtractArrayElementType<
   typeof getTransactionsForBudget
@@ -126,6 +127,9 @@ export const columns: ColumnDef<TransactionDetails>[] = [
         queryClient.invalidateQueries(
           transactionQueries.forBudget(transaction.budgetId),
         )
+        toast.success('Transaction deleted.', {
+          description: transaction.description,
+        })
       }
 
       return (
