@@ -40,6 +40,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { Separator } from '@/components/ui/separator'
+import { create } from 'domain'
 
 interface Props {
   defaultValues?: {
@@ -50,6 +52,8 @@ interface Props {
 
 export default function NewTransactionForm(props: Props) {
   const queryClient = useQueryClient()
+
+  const [createMore, setCreateMore] = useState<boolean>(false)
 
   const [yourShare, setYourShare] = useState<number | string>(0)
   const [isShared, setIsShared] = useState<boolean>(false)
@@ -79,7 +83,7 @@ export default function NewTransactionForm(props: Props) {
 
       toast.success('Transaction created.')
 
-      props.closeDialog()
+      if (!createMore) props.closeDialog()
     },
   })
 
@@ -381,13 +385,34 @@ export default function NewTransactionForm(props: Props) {
             Add Reimbursement
           </Button>
         </div>
-        <Button
-          type="submit"
-          className="col-span-4"
-          disabled={isPending}
-        >
-          Submit
-        </Button>
+        <div className="col-span-4 inline-flex items-center justify-between rounded-xl border border-border bg-zinc-50 p-4 shadow-sm">
+          <div className="inline-flex items-center gap-2">
+            <Checkbox
+              defaultChecked={false}
+              checked={createMore}
+              onCheckedChange={() => setCreateMore(!createMore)}
+              disabled={isPending}
+            />
+            <Label className="text-sm ">Create another transaction</Label>
+          </div>
+          <div className="space-x-2">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={isPending}
+              onClick={props.closeDialog}
+            >
+              Cancel
+            </Button>
+
+            <Button
+              type="submit"
+              disabled={isPending}
+            >
+              Create
+            </Button>
+          </div>
+        </div>
       </form>
     </Form>
   )
