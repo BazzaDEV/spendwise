@@ -27,6 +27,7 @@ import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 import { useState } from 'react'
 import { Checkbox } from '@/components/ui/checkbox'
+import { getQueryClient, reimbursementQueries } from '@/lib/queries'
 
 type ElementType<T> = T extends (infer U)[] ? U : never
 
@@ -48,15 +49,18 @@ export default function UserReimbursements(props: {
   const [open, setOpen] = useState<boolean>(false)
   const [selectedIds, setSelectedIds] = useState<string[]>([])
 
+  const queryClient = getQueryClient()
+
   const person = props.person
 
   const { mutate, isPending } = useMutation({
     mutationFn: settleReimbursementsById,
-    onSuccess: (data) => {
+    onSuccess: () => {
+      queryClient.invalidateQueries(reimbursementQueries.owed())
       toast.success(`Reimbursements with ${person.name} have been settled.`)
       setOpen(false)
     },
-    onError: (data) => {
+    onError: () => {
       toast.error(`Couldn't settle reimbursements with ${person.name}.`)
       setOpen(false)
     },
