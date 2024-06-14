@@ -29,7 +29,7 @@ import { TransactionsTableFloatingBar } from './transactions-table-floating-bar'
 import { useState } from 'react'
 import TransactionsTableToolbar from './transactions-table-toolbar'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { transactionQueries } from '@/lib/queries'
+import { getQueryClient, transactionQueries } from '@/lib/queries'
 import { useParams } from 'next/navigation'
 
 export type TransactionDetails = ExtractArrayElementType<
@@ -118,9 +118,14 @@ export const columns: ColumnDef<TransactionDetails>[] = [
     id: 'actions',
     cell: ({ row }) => {
       const transaction = row.original
+      const queryClient = getQueryClient()
 
       async function handleDelete() {
         await deleteTransaction({ transactionId: transaction.id })
+        queryClient.invalidateQueries(transactionQueries.detail(transaction.id))
+        queryClient.invalidateQueries(
+          transactionQueries.forBudget(transaction.budgetId),
+        )
       }
 
       return (
