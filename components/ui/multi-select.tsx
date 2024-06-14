@@ -54,6 +54,11 @@ export function MultiSelect({
     (o) => !value.some((v) => v.label === o.label),
   )
 
+  const hasCandidate =
+    selectables.filter((s) =>
+      s.label.toLowerCase().startsWith(searchInput?.toLowerCase() ?? ''),
+    ).length > 0
+
   function handleSelect(option: MultiSelectOption) {
     const updatedValue = [...value, option]
     onChange(updatedValue)
@@ -68,7 +73,12 @@ export function MultiSelect({
     async (e: React.KeyboardEvent<HTMLDivElement>) => {
       const input = inputRef.current
       if (input) {
-        if (e.key === 'Enter' && searchInput && !searchMatchesExistingOption) {
+        if (
+          e.key === 'Enter' &&
+          searchInput &&
+          !searchMatchesExistingOption &&
+          !hasCandidate
+        ) {
           e.preventDefault()
 
           handleSelect({ label: searchInput })
@@ -94,6 +104,7 @@ export function MultiSelect({
       value,
       searchInput,
       searchMatchesExistingOption,
+      hasCandidate,
     ],
   )
 
